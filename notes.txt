@@ -1,0 +1,85 @@
+    WSL 2
+
+    // Create file
+    cargo new --bin webhello
+    creates cargo.toml
+    creates src file w/ main.rs
+    
+    // github repo with class code
+    github-pdx-cs-rust-web/webhello.git
+
+    // checks code
+    RUN WITH CLIPPY
+    RUN WITH CLIPPY
+    RUN WITH CLIPPY
+    RUN WITH CLIPPY
+    change rust analyzer to use cargo CLIPPY
+
+    // checks rust format
+    cargo fmt will format the code
+
+    // usize is big enough to index every portion of the var
+    fn print_msg(msg: &str) -> usize{
+        // Compiles then crashes
+        todo!()
+
+        println!("{}", msg);
+
+        // no return statement needed
+        msg.len();
+
+    }
+
+
+    fn main() {
+        //Integrer types
+        u8 u16 u32 u64 u128
+        i8 i16 i32 i64 i128
+
+        // Float types
+        f32 f64
+
+        // Boolean
+        bool true false
+
+        // Tuple, similar to structs, index with .?
+       let x =  (1,"hello");
+       x.0 x.1
+
+       // Just one value, add the comma for tuple
+       let y = (1,);
+
+       // Unit, only can store the unit value. Unit value is returned from main.
+       let z = ();
+
+       let len = print_msg("hello world");
+       println!("{}", len);
+
+       // Can change value, is mutable
+       let mut x = 5;
+       x += 1;
+
+       // let a = if a == 0 {
+       let a = 5;
+       let b = if a > 0 {
+            "hello"
+       } else {
+            "goodbye"
+       };
+
+
+       // counts 10 to 1, the rev() reverses it
+       // for i in (1u8 ..= 10).rev() {
+        
+       for i in (1 ..= 10u8).rev() {
+        println!("{}",i);
+       }
+       println!("HELLO WORLD!");
+        
+    }
+
+
+    struct Point{
+        x: i64,
+        y: i64,
+    }
