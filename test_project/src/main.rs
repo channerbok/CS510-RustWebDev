@@ -1,5 +1,5 @@
 fn main() {
-    println!("Hello, world!");
+    println!("Visual Studio Test");
 
-    println!("Hello, world!");
+
 }
