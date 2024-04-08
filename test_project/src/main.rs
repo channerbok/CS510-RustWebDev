@@ -24,7 +24,7 @@ fn main() {
         eprintln!("connection from {}", addr);
         discard_request(&mut tcp_stream);
         write!(tcp_stream, "HTTP/1.0 200 OK\r\n\r\n").unwrap();
-        write!(tcp_stream, "<html><body><em>hello world</em></body></html>\r\n").unwrap();
+        write!(tcp_stream, "<html><body><em>Web Server Test</em></body></html>\r\n").unwrap();
         tcp_stream.flush().unwrap();
     }
 }
