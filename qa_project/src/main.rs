@@ -1,5 +1,15 @@
+/*
+Credit to Axum Documentation  - https://docs.rs/axum/latest/axum/
+
+*/
+
 use std::io::{Error, ErrorKind};
 use std::str::FromStr;
+use std::net::SocketAddr;
+use axum::{
+    routing::get,
+    Router,
+};
 
 #[allow(dead_code)]
 #[derive(Debug)]
@@ -34,12 +44,20 @@ impl FromStr for QuestionId {
     }
 }
 
-fn main() {
- let question = Question::new(
- QuestionId::from_str("1").expect("No id provided"),
- "First Question".to_string(),
- "Content of question".to_string(),
- Some(vec!("faq".to_string())),
- );
- println!("{:?}", question);
+
+
+#[tokio::main]
+async fn main() {
+    
+    // Create route with response
+    let hello = Router::new()
+    .route("/", get(|| async { "Hello, World!" }));
+    
+    // Bind tcplistener to localhost
+    let listener = tokio::net::TcpListener::
+    bind("0.0.0.0:3000").await.unwrap();
+    
+    // Handle incoming requests
+    axum::serve(listener, hello).await.unwrap();
+ 
 }
