@@ -1,0 +1,25 @@
+{
+ "1" : {
+ "id": "1",
+ "title": "How?",
+ "content": "Please help!",
+ "tags": ["general"]
+ },
+
+ 
+ "2" : {
+ "id": "2",
+ "title": "Where?",
+ "content": "Over Here!",
+ "tags": ["rust"]
+ },
+
+ "3" : {
+ "id": "3",
+ "title": "When?",
+ "content": "Very Soon!",
+ "tags": ["rust"]
+ }
+ 
+ 
+}

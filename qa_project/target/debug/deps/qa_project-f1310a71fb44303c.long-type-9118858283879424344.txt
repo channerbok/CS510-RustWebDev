@@ -1,0 +1,1 @@
+fn(HashMap<std::string::String, std::string::String>, Arc<std::sync::RwLock<HashMap<QuestionId, Question>>>) -> impl Handler<{type error}, {type error}> {get_questions}
