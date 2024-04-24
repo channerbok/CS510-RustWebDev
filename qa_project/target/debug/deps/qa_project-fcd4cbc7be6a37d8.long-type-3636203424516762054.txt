@@ -1,0 +1,1 @@
+HandleError<impl Future<Output = Result<axum::Json<Question>, (axum::http::StatusCode, &'static str)>>, fn(anyhow::Error) -> impl Future<Output = (axum::http::StatusCode, std::string::String)> {handle_anyhow_error}, _>
