@@ -22,9 +22,10 @@ use axum::{
 };
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::fmt;
+use std::result::Result::Ok;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use std::fmt;
 use tower_http::cors::{Any, CorsLayer};
 
 #[derive(Clone)]
@@ -45,7 +46,6 @@ impl Store {
     }
 }
 
-
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
 struct Question {
     id: i32,
@@ -54,33 +54,52 @@ struct Question {
     tags: Option<Vec<String>>,
 }
 
-
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
 struct QuestionId(i32);
-
-
-
 
 async fn handler_fallback() -> Response {
     (StatusCode::NOT_FOUND, "404 Not Found").into_response()
 }
 
+#[derive(Debug)]
+struct Pagination {
+    start: usize,
+    end: usize,
+}
+
+// Formats pagination
+fn extract_pagination(params: HashMap<String, String>) -> Result<Pagination, MyError> {
+    if params.contains_key("start") && params.contains_key("end") {
+        let start = match params.get("start").unwrap().parse::<usize>() {
+            Ok(start) => start,
+            Err(err) => return Err(MyError::ParseError(err)),
+        };
+        let end = match params.get("end").unwrap().parse::<usize>() {
+            Ok(end) => end,
+            Err(err) => return Err(MyError::ParseError(err)),
+        };
+
+        Ok(Pagination { start, end })
+    } else {
+        Err(MyError::MissingParameters)
+    }
+}
+
 
 
 // Handler to get questions
+// Handles either query parameters in the request i.e. (http://localhost:3000/questions?start=0&end=5)
+// Also handles the base line request and returns entire question json i.e. (http://localhost:3000/questions)
 async fn get_questions(
     Query(params): Query<HashMap<String, String>>,
     State(store): State<Store>,
 ) -> Result<Response, MyError> {
-    
-    
-    if let Some(n) = params.get("start") {
-        println!("{:?}", n.parse::<usize>());
-    }
+
 
     let questions = store.questions.read().await;
     let error_param = MyError::MissingParameters;
 
+    // Error handle for parser
     let _start_param = match params.get("start") {
         Some(start) => match start.parse::<usize>() {
             Ok(start) => Some(start),
@@ -94,7 +113,30 @@ async fn get_questions(
         return Err(error_param);
     }
 
-    // Return the json response
+    // Return a set amount of questions based upon query parameters in request
+    if !params.is_empty() {
+        let pagination = extract_pagination(params.clone()).unwrap();
+        let json_string = serde_json::to_string_pretty(&*questions).unwrap();
+        let start_index = pagination.start;
+        let end_index = pagination.end.min(json_string.len());
+        let questions: HashMap<String, Question> = serde_json::from_str(&json_string).unwrap();
+
+        let mut sliced_questions: HashMap<String, Question> = HashMap::new();
+        for (key, value) in questions.iter().skip(start_index).take(end_index) {
+            sliced_questions.insert(key.clone(), value.clone());
+        }
+
+        let sliced_json_string = serde_json::to_string_pretty(&sliced_questions).unwrap();
+
+        let response = Response::builder()
+            .status(StatusCode::OK)
+            .body(Body::from(sliced_json_string))
+            .unwrap();
+
+        return Ok(response);
+    }
+
+    // Return the entire json response
     let response = Response::builder()
         .status(StatusCode::OK)
         .body(Body::from(
@@ -104,6 +146,8 @@ async fn get_questions(
 
     Ok(response)
 }
+
+
 
 // Custom Error type
 #[allow(dead_code)]
@@ -129,7 +173,6 @@ impl IntoResponse for MyError {
     }
 }
 
-
 impl fmt::Display for MyError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -138,7 +181,6 @@ impl fmt::Display for MyError {
         }
     }
 }
-
 
 #[tokio::main]
 async fn main() {
