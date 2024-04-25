@@ -20,6 +20,8 @@ use axum::{
     routing::get,
     Router,
 };
+
+use axum::routing::delete;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::collections::HashMap;
@@ -67,6 +69,16 @@ impl Store {
         }
         self
     }
+
+    // Delete question from Hash map
+    async fn delete_question(self, question: Question) -> Self {
+    self.questions.write().await.remove(&question.id);
+    self
+    }
+
+
+
+
 }
 
 // Adds the the POST question to the json
@@ -224,6 +236,31 @@ async fn update_question(
     Ok(response)
 }
 
+// Updates question, PUT implemenation 
+async fn delete_question(
+    State(store): State<Store>,
+    Json(question): Json<Question>,
+) -> Result<Response, MyError> {
+    
+     // Updates Hash Map
+    let cloned_question = question.clone();
+    let store_clone  = store.clone();
+    store_clone.delete_question(cloned_question).await;
+   
+   
+   
+    match store.questions.write().await.remove(&question.id) {
+        Some(_) => {
+            let response = Response::builder()
+                .status(StatusCode::OK)
+                .body(Body::from("Question Deleted"))
+                .unwrap();
+            Ok(response)
+        }
+        None => Err(MyError::QuestionNotFound),
+    }
+}
+
 // Custom Error type
 #[allow(dead_code)]
 #[derive(Debug)]
@@ -276,6 +313,7 @@ async fn main() {
         .route("/questions", get(get_questions))
         .route("/questions", post(add_question))
         .route("/questions/:id", put(update_question))
+        .route("/questions/:id", delete(delete_question))
         .layer(cors)
         .with_state(store)
         .fallback(handler_fallback);
