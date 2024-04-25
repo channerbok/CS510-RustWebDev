@@ -14,7 +14,7 @@ use std::net::SocketAddr;
 
 use axum::body::Body;
 use axum::{
-    extract::State,
+    extract::{Query, State},
     http::StatusCode,
     response::{IntoResponse, Response},
     routing::get,
@@ -22,11 +22,9 @@ use axum::{
 };
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::io::{Error, ErrorKind};
 use std::sync::Arc;
 use tokio::sync::RwLock;
-
-use std::str::FromStr;
+use std::fmt;
 use tower_http::cors::{Any, CorsLayer};
 
 #[derive(Clone)]
@@ -47,52 +45,54 @@ impl Store {
     }
 }
 
-#[allow(dead_code)]
+
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
 struct Question {
-    id: QuestionId,
+    id: i32,
     title: String,
     content: String,
     tags: Option<Vec<String>>,
 }
 
-#[allow(dead_code)]
-#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
-struct QuestionId(String);
 
-impl FromStr for QuestionId {
-    type Err = std::io::Error;
-    fn from_str(id: &str) -> Result<Self, Self::Err> {
-        match id.is_empty() {
-            false => Ok(QuestionId(id.to_string())),
-            true => Err(Error::new(ErrorKind::InvalidInput, "No id provided")),
-        }
-    }
-}
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
+struct QuestionId(i32);
+
+
+
 
 async fn handler_fallback() -> Response {
     (StatusCode::NOT_FOUND, "404 Not Found").into_response()
 }
 
-// Handler to get questions 
-async fn get_questions(State(store): State<Store>) -> Result<Response, MyError> {
+
+
+// Handler to get questions
+async fn get_questions(
+    Query(params): Query<HashMap<String, String>>,
+    State(store): State<Store>,
+) -> Result<Response, MyError> {
+    
+    
+    if let Some(n) = params.get("start") {
+        println!("{:?}", n.parse::<usize>());
+    }
+
     let questions = store.questions.read().await;
     let error_param = MyError::MissingParameters;
-    let error_parse = MyError::ParseError;
 
-    
+    let _start_param = match params.get("start") {
+        Some(start) => match start.parse::<usize>() {
+            Ok(start) => Some(start),
+            Err(err) => return Err(MyError::ParseError(err)),
+        },
+        None => None,
+    };
+
     // Error handle for missing parameters
     if questions.is_empty() {
         return Err(error_param);
     }
-
-    // Error handle for parser fail
-    let _json_string = match serde_json::to_string_pretty(&*questions) {
-        Ok(_json_string) => _json_string,
-        Err(_) => {
-            return Err(error_parse);
-        }
-    };
 
     // Return the json response
     let response = Response::builder()
@@ -105,11 +105,11 @@ async fn get_questions(State(store): State<Store>) -> Result<Response, MyError> 
     Ok(response)
 }
 
-
 // Custom Error type
+#[allow(dead_code)]
 #[derive(Debug)]
 enum MyError {
-    ParseError,
+    ParseError(std::num::ParseIntError),
     MissingParameters,
 }
 
@@ -117,7 +117,7 @@ enum MyError {
 impl IntoResponse for MyError {
     fn into_response(self) -> Response {
         match self {
-            MyError::ParseError => Response::builder()
+            MyError::ParseError(_) => Response::builder()
                 .status(StatusCode::BAD_REQUEST)
                 .body(Body::from("Failed to parse integer"))
                 .unwrap(),
@@ -128,6 +128,17 @@ impl IntoResponse for MyError {
         }
     }
 }
+
+
+impl fmt::Display for MyError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            MyError::ParseError(err) => write!(f, "Cannot parse parameter: {}", err),
+            MyError::MissingParameters => write!(f, "Missing parameter"),
+        }
+    }
+}
+
 
 #[tokio::main]
 async fn main() {
