@@ -9,10 +9,10 @@ Credit to Axum Documentation
 
 */
 
-use axum::http::{header, Method};
-use std::net::SocketAddr;
-
 use axum::body::Body;
+use axum::http::{header, Method};
+use axum::routing::post;
+use axum::Json;
 use axum::{
     extract::{Query, State},
     http::StatusCode,
@@ -21,10 +21,15 @@ use axum::{
     Router,
 };
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 use std::collections::HashMap;
 use std::fmt;
+use std::net::SocketAddr;
 use std::result::Result::Ok;
 use std::sync::Arc;
+use tokio::fs::File;
+use tokio::fs::OpenOptions;
+use tokio::io::AsyncWriteExt;
 use tokio::sync::RwLock;
 use tower_http::cors::{Any, CorsLayer};
 
@@ -44,11 +49,40 @@ impl Store {
         let file = include_str!("../questions.json");
         serde_json::from_str(file).expect("can't read questions.json")
     }
+
+    // Adds question to hashmap
+    async fn add_question_store(self, question: Question) -> Self {
+        self.questions
+            .write()
+            .await
+            .insert(question.id.clone(), question);
+        self
+    }
+}
+
+
+// Adds the the POST question to the json
+async fn add_question_to_file(question: &Question) -> tokio::io::Result<File> {
+    let file_path = "../questions.json";
+
+    let mut file = OpenOptions::new()
+        .append(true)
+        .create(true)
+        .open(file_path)
+        .await?;
+
+    let json_question = json!(question);
+
+    let json_string = serde_json::to_string(&json_question)?;
+
+    file.write_all(json_string.as_bytes()).await?;
+
+    Ok(file)
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
 struct Question {
-    id: i32,
+    id: QuestionId,
     title: String,
     content: String,
     tags: Option<Vec<String>>,
@@ -85,8 +119,6 @@ fn extract_pagination(params: HashMap<String, String>) -> Result<Pagination, MyE
     }
 }
 
-
-
 // Handler to get questions
 // Handles either query parameters in the request i.e. (http://localhost:3000/questions?start=0&end=5)
 // Also handles the base line request and returns entire question json i.e. (http://localhost:3000/questions)
@@ -94,8 +126,6 @@ async fn get_questions(
     Query(params): Query<HashMap<String, String>>,
     State(store): State<Store>,
 ) -> Result<Response, MyError> {
-
-
     let questions = store.questions.read().await;
     let error_param = MyError::MissingParameters;
 
@@ -148,6 +178,27 @@ async fn get_questions(
 }
 
 
+// POST question
+async fn add_question(
+    State(store): State<Store>,
+    Json(question): Json<Question>,
+) -> Response<Body> {
+    
+    // Add tohash map
+    let _temp = add_question_to_file(&question).await;
+    
+    // Add to JSON
+    store.add_question_store(question).await;
+    
+    
+    Response::builder()
+        .status(StatusCode::OK)
+        .body(Body::from("Question added"))
+        .unwrap()
+}
+
+/*
+ */
 
 // Custom Error type
 #[allow(dead_code)]
@@ -193,6 +244,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/questions", get(get_questions))
+        .route("/questions", post(add_question))
         .layer(cors)
         .with_state(store)
         .fallback(handler_fallback);
