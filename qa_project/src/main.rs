@@ -11,7 +11,7 @@ Credit to Axum Documentation
 
 use axum::body::Body;
 use axum::http::{header, Method};
-use axum::routing::post;
+use axum::routing::{post, put};
 use axum::Json;
 use axum::{
     extract::{Query, State},
@@ -58,8 +58,16 @@ impl Store {
             .insert(question.id.clone(), question);
         self
     }
-}
 
+    // Updates question to hashmap
+    async fn update_question(self, question: Question) -> Self {
+        match self.questions.write().await.get_mut(&question.id) {
+            Some(q) => *q = question,
+            None => {}
+        }
+        self
+    }
+}
 
 // Adds the the POST question to the json
 async fn add_question_to_file(question: &Question) -> tokio::io::Result<File> {
@@ -177,28 +185,44 @@ async fn get_questions(
     Ok(response)
 }
 
-
 // POST question
 async fn add_question(
     State(store): State<Store>,
     Json(question): Json<Question>,
 ) -> Response<Body> {
-    
     // Add tohash map
     let _temp = add_question_to_file(&question).await;
-    
+
     // Add to JSON
     store.add_question_store(question).await;
-    
-    
+
     Response::builder()
         .status(StatusCode::OK)
         .body(Body::from("Question added"))
         .unwrap()
 }
 
-/*
- */
+// Updates question, PUT implemenation 
+async fn update_question(
+    State(store): State<Store>,
+    Json(question): Json<Question>,
+) -> Result<Response, MyError> {
+    let cloned_question = question.clone();
+    match store.questions.write().await.get_mut(&question.id) {
+        Some(q) => *q = question,
+        None => return Err(MyError::QuestionNotFound),
+    }
+
+    // Updates Hash Map
+    store.update_question(cloned_question).await;
+
+    let response = Response::builder()
+        .status(StatusCode::OK)
+        .body(Body::from("Question Updated"))
+        .unwrap();
+
+    Ok(response)
+}
 
 // Custom Error type
 #[allow(dead_code)]
@@ -206,6 +230,7 @@ async fn add_question(
 enum MyError {
     ParseError(std::num::ParseIntError),
     MissingParameters,
+    QuestionNotFound,
 }
 
 // Custom error type implementation
@@ -220,6 +245,10 @@ impl IntoResponse for MyError {
                 .status(StatusCode::BAD_REQUEST)
                 .body(Body::from("Missing parameters"))
                 .unwrap(),
+            MyError::QuestionNotFound => Response::builder()
+                .status(StatusCode::BAD_REQUEST)
+                .body(Body::from("Question Not Found"))
+                .unwrap(),
         }
     }
 }
@@ -229,6 +258,7 @@ impl fmt::Display for MyError {
         match self {
             MyError::ParseError(err) => write!(f, "Cannot parse parameter: {}", err),
             MyError::MissingParameters => write!(f, "Missing parameter"),
+            MyError::QuestionNotFound => write!(f, "Question Not Found"),
         }
     }
 }
@@ -245,6 +275,7 @@ async fn main() {
     let app = Router::new()
         .route("/questions", get(get_questions))
         .route("/questions", post(add_question))
+        .route("/questions/:id", put(update_question))
         .layer(cors)
         .with_state(store)
         .fallback(handler_fallback);

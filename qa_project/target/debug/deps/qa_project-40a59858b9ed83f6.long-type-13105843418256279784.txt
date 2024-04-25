@@ -1,0 +1,1 @@
+fn(std::string::String, axum::extract::State<Store>, Json<Question>) -> impl Future<Output = Result<Response<Body>, MyError>> {update_question}
