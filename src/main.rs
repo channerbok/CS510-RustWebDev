@@ -68,20 +68,7 @@ impl Store {
         self
     }
 
-    // Updates question to hashmap
-    async fn update_question(self, question: Question) -> Self {
-        match self.questions.write().await.get_mut(&question.id) {
-            Some(q) => *q = question,
-            None => {}
-        }
-        self
-    }
 
-    // Delete question from Hash map
-    async fn delete_question(self, question: Question) -> Self {
-        self.questions.write().await.remove(&question.id);
-        self
-    }
 }
 
 // Adds the the POST question to the json
@@ -111,12 +98,15 @@ struct Question {
     tags: Option<Vec<String>>,
 }
 
+
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
 struct QuestionId(String);
 
 async fn handler_fallback() -> Response {
     (StatusCode::NOT_FOUND, "405 Not Found").into_response()
 }
+
+
 
 #[derive(Debug)]
 struct Pagination {
@@ -232,6 +222,7 @@ async fn add_question(
     State(store): State<Store>,
     Json(question): Json<Question>,
 ) -> Response<Body> {
+    
     // Add to hash map
     let _temp = add_question_to_file(&question).await;
 
@@ -249,14 +240,14 @@ async fn update_question(
     State(store): State<Store>,
     Json(question): Json<Question>,
 ) -> Result<Response, MyError> {
-    let cloned_question = question.clone();
+    
+    
+
     match store.questions.write().await.get_mut(&question.id) {
         Some(q) => *q = question,
         None => return Err(MyError::QuestionNotFound),
     }
 
-    // Updates Hash Map
-    store.update_question(cloned_question).await;
 
     let response = Response::builder()
         .status(StatusCode::OK)
@@ -271,10 +262,6 @@ async fn delete_question(
     State(store): State<Store>,
     Json(question): Json<Question>,
 ) -> Result<Response, MyError> {
-    // Updates Hash Map
-    let cloned_question = question.clone();
-    let store_clone = store.clone();
-    store_clone.delete_question(cloned_question).await;
 
     match store.questions.write().await.remove(&question.id) {
         Some(_) => {
