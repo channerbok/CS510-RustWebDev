@@ -238,12 +238,13 @@ async fn add_question(
 // Updates question, PUT implemenation
 async fn update_question(
     State(store): State<Store>,
+    Path(id): Path<QuestionId>,
     Json(question): Json<Question>,
 ) -> Result<Response, MyError> {
     
     
 
-    match store.questions.write().await.get_mut(&question.id) {
+    match store.questions.write().await.get_mut(&id) {
         Some(q) => *q = question,
         None => return Err(MyError::QuestionNotFound),
     }
@@ -257,13 +258,15 @@ async fn update_question(
     Ok(response)
 }
 
+
+
 // Updates question, PUT implemenation
 async fn delete_question(
     State(store): State<Store>,
-    Json(question): Json<Question>,
+   Path(id): Path<QuestionId>,
 ) -> Result<Response, MyError> {
 
-    match store.questions.write().await.remove(&question.id) {
+    match store.questions.write().await.remove(&id) {
         Some(_) => {
             let response = Response::builder()
                 .status(StatusCode::OK)
