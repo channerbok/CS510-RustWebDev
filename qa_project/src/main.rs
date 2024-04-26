@@ -10,7 +10,9 @@ Credit to Axum Documentation
 */
 
 use axum::body::Body;
-use axum::http::{header, Method};
+use axum::extract::Path;
+use axum::http::{header, Method, Uri};
+use axum::routing::delete;
 use axum::routing::{post, put};
 use axum::Json;
 use axum::{
@@ -20,13 +22,12 @@ use axum::{
     routing::get,
     Router,
 };
-
-use axum::routing::delete;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::collections::HashMap;
 use std::fmt;
 use std::net::SocketAddr;
+use std::process::id;
 use std::result::Result::Ok;
 use std::sync::Arc;
 use tokio::fs::File;
@@ -52,6 +53,12 @@ impl Store {
         serde_json::from_str(file).expect("can't read questions.json")
     }
 
+    // Gets question from hashmap
+    async fn get_question(&self, id: QuestionId) -> Option<Question> {
+        let questions = self.questions.read().await;
+        questions.get(&id).cloned()
+    }
+
     // Adds question to hashmap
     async fn add_question_store(self, question: Question) -> Self {
         self.questions
@@ -72,13 +79,9 @@ impl Store {
 
     // Delete question from Hash map
     async fn delete_question(self, question: Question) -> Self {
-    self.questions.write().await.remove(&question.id);
-    self
+        self.questions.write().await.remove(&question.id);
+        self
     }
-
-
-
-
 }
 
 // Adds the the POST question to the json
@@ -109,10 +112,10 @@ struct Question {
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
-struct QuestionId(i32);
+struct QuestionId(String);
 
 async fn handler_fallback() -> Response {
-    (StatusCode::NOT_FOUND, "404 Not Found").into_response()
+    (StatusCode::NOT_FOUND, "405 Not Found").into_response()
 }
 
 #[derive(Debug)]
@@ -197,12 +200,39 @@ async fn get_questions(
     Ok(response)
 }
 
+
+// Get a single question with using ID as a query parameter
+async fn get_question(
+    Path(id): Path<QuestionId>,
+    State(store): State<Store>,
+) -> Result<Response, MyError> {
+    
+    let store_clone = store.clone();
+    let question = store_clone.get_question(id).await;
+
+    let response = match question {
+        Some(question) => {
+            let body = serde_json::to_string(&question).unwrap();
+            Response::builder()
+                .status(StatusCode::OK)
+                .body(Body::from(body))
+                .unwrap()
+        }
+        None => Response::builder()
+            .status(StatusCode::NOT_FOUND)
+            .body(Body::from("Question not found"))
+            .unwrap(),
+    };
+
+    Ok(response)
+}
+
 // POST question
 async fn add_question(
     State(store): State<Store>,
     Json(question): Json<Question>,
 ) -> Response<Body> {
-    // Add tohash map
+    // Add to hash map
     let _temp = add_question_to_file(&question).await;
 
     // Add to JSON
@@ -214,7 +244,7 @@ async fn add_question(
         .unwrap()
 }
 
-// Updates question, PUT implemenation 
+// Updates question, PUT implemenation
 async fn update_question(
     State(store): State<Store>,
     Json(question): Json<Question>,
@@ -236,19 +266,16 @@ async fn update_question(
     Ok(response)
 }
 
-// Updates question, PUT implemenation 
+// Updates question, PUT implemenation
 async fn delete_question(
     State(store): State<Store>,
     Json(question): Json<Question>,
 ) -> Result<Response, MyError> {
-    
-     // Updates Hash Map
+    // Updates Hash Map
     let cloned_question = question.clone();
-    let store_clone  = store.clone();
+    let store_clone = store.clone();
     store_clone.delete_question(cloned_question).await;
-   
-   
-   
+
     match store.questions.write().await.remove(&question.id) {
         Some(_) => {
             let response = Response::builder()
@@ -303,6 +330,7 @@ impl fmt::Display for MyError {
 #[tokio::main]
 async fn main() {
     let store = Store::new();
+    println!("START");
 
     let cors = CorsLayer::new()
         .allow_origin(Any)
@@ -311,6 +339,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/questions", get(get_questions))
+        .route("/question/:id", get(get_question))
         .route("/questions", post(add_question))
         .route("/questions/:id", put(update_question))
         .route("/questions/:id", delete(delete_question))
