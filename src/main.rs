@@ -1,19 +1,32 @@
 /*
+CODE REFERENCED/ADAPTED FROM:
+
 Credit to Axum Documentation
  https://docs.rs/axum/latest/axum/
  https://docs.rs/axum/latest/axum/extract/struct.State.html
  https://docs.rs/tower-http/0.5.2/tower_http/cors/index.html
+ https://docs.rs/axum/latest/axum/routing/struct.Router.html
 
  Credit to Tokio Documentation
  https://github.com/tokio-rs/axum
+
+ Credit to Course Textbook
+ Rust Web Development WITH WARP, TOKIO, AND REQWEST - Bastian Gruber
+
+ Credit to ChatGPT 3.5 for Debugging PUT, POST, GET, DELETE implementations
+
+ Credit to Rust Users page
+ https://users.rust-lang.org/
+
+
 
 */
 
 use axum::body::Body;
 use axum::extract::Path;
-use axum::http::{header, Method, Uri};
-use axum::routing::delete;
-use axum::routing::{post, put};
+use axum::http::{header, Method};
+
+use axum::routing::{post, put, delete};
 use axum::Json;
 use axum::{
     extract::{Query, State},
@@ -22,25 +35,32 @@ use axum::{
     routing::get,
     Router,
 };
+
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+
 use std::collections::HashMap;
 use std::fmt;
 use std::net::SocketAddr;
-use std::process::id;
 use std::result::Result::Ok;
 use std::sync::Arc;
+
 use tokio::fs::File;
 use tokio::fs::OpenOptions;
 use tokio::io::AsyncWriteExt;
 use tokio::sync::RwLock;
 use tower_http::cors::{Any, CorsLayer};
 
+
+// Mock Data base type
 #[derive(Clone)]
 struct Store {
     questions: Arc<RwLock<HashMap<QuestionId, Question>>>,
 }
 
+
+// Initialize data base
+// Functions to delete/change data base
 impl Store {
     fn new() -> Self {
         Store {
@@ -71,7 +91,7 @@ impl Store {
 
 }
 
-// Adds the the POST question to the json
+// Adds the the POST question to the json file
 async fn add_question_to_file(question: &Question) -> tokio::io::Result<File> {
     let file_path = "../questions.json";
 
@@ -90,6 +110,8 @@ async fn add_question_to_file(question: &Question) -> tokio::io::Result<File> {
     Ok(file)
 }
 
+
+// Question struct
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
 struct Question {
     id: QuestionId,
@@ -99,15 +121,18 @@ struct Question {
 }
 
 
+// Question id 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
 struct QuestionId(String);
 
+
+// Fallback
 async fn handler_fallback() -> Response {
-    (StatusCode::NOT_FOUND, "405 Not Found").into_response()
+    (StatusCode::NOT_FOUND, "404 Not Found").into_response()
 }
 
 
-
+// Pagination struct
 #[derive(Debug)]
 struct Pagination {
     start: usize,
@@ -179,7 +204,7 @@ async fn get_questions(
         return Ok(response);
     }
 
-    // Return the entire json response
+    // Return the entire json response when pagination is not present in URL
     let response = Response::builder()
         .status(StatusCode::OK)
         .body(Body::from(
@@ -191,7 +216,7 @@ async fn get_questions(
 }
 
 
-// Get a single question with using ID as a query parameter
+// Get a single question with using ID as a query parameter (http://localhost:3000/question/1)
 async fn get_question(
     Path(id): Path<QuestionId>,
     State(store): State<Store>,
@@ -260,7 +285,7 @@ async fn update_question(
 
 
 
-// Updates question, PUT implemenation
+// Deletes question, DELETE implemenation
 async fn delete_question(
     State(store): State<Store>,
    Path(id): Path<QuestionId>,
@@ -278,8 +303,9 @@ async fn delete_question(
     }
 }
 
+
+
 // Custom Error type
-#[allow(dead_code)]
 #[derive(Debug)]
 enum MyError {
     ParseError(std::num::ParseIntError),
@@ -287,7 +313,8 @@ enum MyError {
     QuestionNotFound,
 }
 
-// Custom error type implementation
+
+// Custom error type implementation, converts to response
 impl IntoResponse for MyError {
     fn into_response(self) -> Response {
         match self {
@@ -307,6 +334,8 @@ impl IntoResponse for MyError {
     }
 }
 
+
+
 impl fmt::Display for MyError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -316,6 +345,8 @@ impl fmt::Display for MyError {
         }
     }
 }
+
+
 
 #[tokio::main]
 async fn main() {
