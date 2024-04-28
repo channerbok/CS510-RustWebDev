@@ -14,6 +14,7 @@ Credit to Axum Documentation
  Rust Web Development WITH WARP, TOKIO, AND REQWEST - Bastian Gruber
 
  Credit to ChatGPT 3.5 for Debugging PUT, POST, GET, DELETE implementations
+ https://chat.openai.com/
 
  Credit to Rust Users page
  https://users.rust-lang.org/
