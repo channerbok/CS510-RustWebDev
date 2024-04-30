@@ -28,11 +28,27 @@ use tokio::io::AsyncWriteExt;
 use tokio::sync::RwLock;
 use tower_http::cors::{Any, CorsLayer};
 
+// Answer Key
+#[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Eq, Hash)]
+struct AnswerId(String);
+
+
+// Answer Struct
+#[derive(Serialize, Deserialize, Debug, Clone)]
+struct Answer {
+ id: AnswerId,
+ content: String,
+ question_id: QuestionId,
+}
+
+
 
 // Mock Data base type
 #[derive(Clone)]
 struct Store {
     questions: Arc<RwLock<HashMap<QuestionId, Question>>>,
+    answers: Arc<RwLock<HashMap<AnswerId, Answer>>>,
+
 }
 
 
@@ -42,8 +58,11 @@ impl Store {
     fn new() -> Self {
         Store {
             questions: Arc::new(RwLock::new(self::Store::init())),
+            answers: Arc::new(RwLock::new(HashMap::new())),
         }
     }
+
+
 
     fn init() -> HashMap<QuestionId, Question> {
         let file = include_str!("../questions.json");
@@ -62,6 +81,20 @@ impl Store {
             .write()
             .await
             .insert(question.id.clone(), question);
+        self
+    }
+
+    async fn add_answer_store(self, params: HashMap<String, String>) -> Self{
+        
+        let answer = Answer{
+            id: AnswerId("1".to_string()),
+            content: params.get("content").unwrap().to_string(),
+            question_id: QuestionId(
+            params.get("questionId").unwrap().to_string()
+            ),
+        };
+        self.answers.write().await.insert(answer.id.clone(), answer);
+
         self
     }
 
@@ -86,6 +119,8 @@ async fn add_question_to_file(question: &Question) -> tokio::io::Result<File> {
 
     Ok(file)
 }
+
+
 
 
 // Question struct
@@ -237,6 +272,24 @@ async fn add_question(
         .unwrap()
 }
 
+// POST question
+async fn add_answer (
+    State(store): State<Store>,
+    Json(answer): Json<Answer>,
+) -> Response<Body> {
+    
+    // Add to hash map
+    //let _temp = add_question_to_file(&answer).await;
+
+    // Add to JSON
+    //store.add_answer_store().await;
+
+    Response::builder()
+        .status(StatusCode::OK)
+        .body(Body::from("Answer added"))
+        .unwrap()
+}
+
 // Updates question, PUT implemenation
 async fn update_question(
     State(store): State<Store>,
@@ -340,6 +393,7 @@ async fn main() {
         .route("/questions", post(add_question))
         .route("/questions/:id", put(update_question))
         .route("/questions/:id", delete(delete_question))
+        .route("/answer", post(add_answer))
         .layer(cors)
         .with_state(store)
         .fallback(handler_fallback);
