@@ -84,19 +84,15 @@ impl Store {
         self
     }
 
-    async fn add_answer_store(self, params: HashMap<String, String>) -> Self{
+    async fn add_answer_store(self, answer: Answer) -> Self{
         
-        let answer = Answer{
-            id: AnswerId("1".to_string()),
-            content: params.get("content").unwrap().to_string(),
-            question_id: QuestionId(
-            params.get("questionId").unwrap().to_string()
-            ),
-        };
-        self.answers.write().await.insert(answer.id.clone(), answer);
-
+        self.answers
+            .write()
+            .await
+            .insert(answer.id.clone(), answer);
         self
     }
+
 
 
 }
@@ -260,10 +256,10 @@ async fn add_question(
     Json(question): Json<Question>,
 ) -> Response<Body> {
     
-    // Add to hash map
+    // Add to JSON
     let _temp = add_question_to_file(&question).await;
 
-    // Add to JSON
+    // Add to hash map
     store.add_question_store(question).await;
 
     Response::builder()
@@ -278,11 +274,8 @@ async fn add_answer (
     Json(answer): Json<Answer>,
 ) -> Response<Body> {
     
-    // Add to hash map
-    //let _temp = add_question_to_file(&answer).await;
-
     // Add to JSON
-    //store.add_answer_store().await;
+    store.add_answer_store(answer).await;
 
     Response::builder()
         .status(StatusCode::OK)
