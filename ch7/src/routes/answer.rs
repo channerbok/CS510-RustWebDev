@@ -14,21 +14,17 @@ use axum::{
 };
 use std::result::Result::Ok;
 
-
 extern crate serde_json;
 
 use crate::store::Store;
 use crate::types::pagination::MyError;
 
-
 use crate::types::answer::NewAnswer;
 
-
 pub async fn add_answer(
-    State(store): State<Store>, 
-    Json(new_answer): Json<NewAnswer>, 
-)-> Result<Response, MyError> {
-    
+    State(store): State<Store>,
+    Json(new_answer): Json<NewAnswer>,
+) -> Result<Response, MyError> {
     if let Err(e) = store.add_answer(new_answer).await {
         return Err(MyError::DatabaseQueryError);
     }

@@ -4,11 +4,11 @@ mod types;
 use crate::routes::answer::add_answer;
 use crate::routes::question::add_question;
 use crate::routes::question::delete_question;
-
 use crate::routes::question::get_questions;
 use crate::routes::question::handler_fallback;
 use crate::routes::question::update_question;
-
+use tracing::info;
+use tracing_subscriber::fmt::format::FmtSpan;
 
 use axum::http::{header, Method};
 
@@ -22,12 +22,23 @@ use tower_http::cors::{Any, CorsLayer};
 
 #[tokio::main]
 async fn main() {
+    let log_filter = std::env::var("RUST_LOG")
+        .unwrap_or_else(|_| "practical_rust_book=info,warp=error".to_owned());
+
+    tracing_subscriber::fmt()
+        // Use the filter we built above to determine which traces to record.
+        .with_env_filter(log_filter)
+        // Record an event when each span closes.
+        // This can be used to time our
+        // routes' durations!
+        .with_span_events(FmtSpan::CLOSE)
+        .init();
+
     let store = store::Store::new("postgres://postgres:4411@localhost:3030/rustwebdev").await;
     sqlx::migrate!()
         .run(&store.clone().connection)
-    .await
-    .expect("Cannot run migration");
-
+        .await
+        .expect("Cannot run migration");
 
     let cors = CorsLayer::new()
         .allow_origin(Any)

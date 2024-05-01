@@ -39,16 +39,19 @@ pub async fn get_questions(
     Query(params): Query<HashMap<String, String>>,
     State(store): State<Store>,
 ) -> Result<impl IntoResponse, MyError> {
+    log::info!("Start querying questions");
     event!(target: "practical_rust_book", Level::INFO, "querying questions");
     let mut pagination = Pagination::default();
 
     // Return a set amount of questions based upon query parameters in request
     if !params.is_empty() {
+        log::info!("Pagination set {:?}", &pagination);
         event!(Level::INFO, pagination = true);
         pagination = extract_pagination(params)?;
     }
 
     info!(pagination = false);
+    log::info!("No pagination used");
     let res: Vec<Question> = match store
         .get_questions(pagination.limit, pagination.offset)
         .await
@@ -66,13 +69,10 @@ pub async fn get_questions(
     Ok(response)
 }
 
-
-
 // POST question
 pub async fn add_question(
     State(store): State<Store>,
-    Json(new_question): Json<NewQuestion>, 
-
+    Json(new_question): Json<NewQuestion>,
 ) -> Result<Response, MyError> {
     if let Err(e) = store.add_question(new_question).await {
         return Err(MyError::DatabaseQueryError);
@@ -89,8 +89,7 @@ pub async fn add_question(
 pub async fn update_question(
     Path(id): Path<i32>,
     State(store): State<Store>,
-    Json(question): Json<Question>, 
-
+    Json(question): Json<Question>,
 ) -> Result<Response<Body>, MyError> {
     let res = match store.update_question(question, id).await {
         Ok(res) => res,
@@ -107,7 +106,7 @@ pub async fn update_question(
 
 // Deletes question, DELETE implemenation
 pub async fn delete_question(
-    Path(id): Path<i32>, 
+    Path(id): Path<i32>,
     State(store): State<Store>,
 ) -> Result<Response, MyError> {
     if let Err(e) = store.delete_question(id).await {
