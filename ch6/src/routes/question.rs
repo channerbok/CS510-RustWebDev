@@ -101,8 +101,9 @@ pub async fn get_questions(
 
     // Return a set amount of questions based upon query parameters in request
     if !params.is_empty() {
-        log::info!("Pagination set {:?}", &pagination);
+        
         let pagination = extract_pagination(params.clone()).unwrap();
+        log::info!("Pagination set {:?}", &pagination);
         let json_string = serde_json::to_string_pretty(&*questions).unwrap();
         let start_index = pagination.start;
         let end_index = pagination.end.min(json_string.len());

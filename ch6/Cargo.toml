@@ -19,5 +19,5 @@ env_logger = "0.9"
 log4rs = "1.0"
 tracing = "0.1"
 tracing-futures = "0.2"
-tracing-subscriber = "0.2"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 sqlx = { version = "0.6.2", features = [ "runtime-tokio-rustls", "migrate", "postgres" ]} 

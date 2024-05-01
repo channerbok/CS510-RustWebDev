@@ -7,8 +7,10 @@ use crate::routes::question::delete_question;
 use crate::routes::question::get_questions;
 use crate::routes::question::handler_fallback;
 use crate::routes::question::update_question;
-use tracing::info;
+use std::env;
 use tracing_subscriber::fmt::format::FmtSpan;
+use tracing_subscriber::prelude::*;
+use tracing_subscriber::FmtSubscriber;
 
 use axum::http::{header, Method};
 
@@ -26,11 +28,7 @@ async fn main() {
         .unwrap_or_else(|_| "practical_rust_book=info,warp=error".to_owned());
 
     tracing_subscriber::fmt()
-        // Use the filter we built above to determine which traces to record.
         .with_env_filter(log_filter)
-        // Record an event when each span closes.
-        // This can be used to time our
-        // routes' durations!
         .with_span_events(FmtSpan::CLOSE)
         .init();
 
