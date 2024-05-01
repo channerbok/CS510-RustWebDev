@@ -1,25 +1,19 @@
 use axum::body::Body;
 
-
-
 use axum::{
-
     http::StatusCode,
     response::{IntoResponse, Response},
 };
 
-
 use std::collections::HashMap;
 use std::result::Result::Ok;
-
-
-
 
 #[derive(Debug)]
 pub enum MyError {
     ParseError(std::num::ParseIntError),
     MissingParameters,
     QuestionNotFound,
+    DatabaseQueryError,
 }
 
 // Custom error type implementation, converts to response
@@ -38,33 +32,40 @@ impl IntoResponse for MyError {
                 .status(StatusCode::BAD_REQUEST)
                 .body(Body::from("Question Not Found"))
                 .unwrap(),
+            MyError::DatabaseQueryError => Response::builder()
+                .status(StatusCode::BAD_REQUEST)
+                .body(Body::from("Database Query Error"))
+                .unwrap(),
         }
     }
 }
 
 // Pagination struct
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Pagination {
-    pub start: usize,
-    pub end: usize,
+    pub limit: Option<i32>,
+    pub offset: i32,
 }
-
 
 #[allow(dead_code)]
 // Formats pagination
 pub fn extract_pagination(params: HashMap<String, String>) -> Result<Pagination, MyError> {
-    if params.contains_key("start") && params.contains_key("end") {
-        let start = match params.get("start").unwrap().parse::<usize>() {
-            Ok(start) => start,
-            Err(err) => return Err(MyError::ParseError(err)),
-        };
-        let end = match params.get("end").unwrap().parse::<usize>() {
-            Ok(end) => end,
-            Err(err) => return Err(MyError::ParseError(err)),
-        };
+    if params.contains_key("limit") && params.contains_key("offset") {
+        return Ok(Pagination {
+            limit: Some(
+                params
+                    .get("limit")
+                    .unwrap()
+                    .parse::<i32>()
+                    .map_err(MyError::ParseError)?,
+            ),
 
-        Ok(Pagination { start, end })
-    } else {
-        Err(MyError::MissingParameters)
+            offset: params
+                .get("offset")
+                .unwrap()
+                .parse::<i32>()
+                .map_err(MyError::ParseError)?,
+        });
     }
+    Err(MyError::MissingParameters)
 }

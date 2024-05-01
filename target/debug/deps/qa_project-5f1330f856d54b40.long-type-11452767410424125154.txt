@@ -1,0 +1,1 @@
+fn(axum::extract::Path<QuestionId>, axum::extract::State<{type error}>) -> impl Future<Output = Result<Response<Body>, MyError>> {get_question}

@@ -1,1 +1,0 @@
-fn(axum::extract::State<Store>, axum::extract::Path<QuestionId>, Json<Question>) -> impl Future<Output = Result<Response<Body>, {type error}>> {update_question}

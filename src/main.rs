@@ -1,37 +1,33 @@
+mod routes;
 mod store;
 mod types;
-mod routes;
-use crate::routes::question::get_questions;
-use crate::routes::question::get_question;
 use crate::routes::answer::add_answer;
-use crate::routes::question::handler_fallback;
 use crate::routes::question::add_question;
-use crate::routes::question::update_question;
 use crate::routes::question::delete_question;
 
-use crate::store::Store;
+use crate::routes::question::get_questions;
+use crate::routes::question::handler_fallback;
+use crate::routes::question::update_question;
 
 
 use axum::http::{header, Method};
 
-use axum::routing::{post, put, delete};
+use axum::routing::{delete, post, put};
 
-use axum::{
-
-    routing::get,
-    Router,
-};
-
+use axum::{routing::get, Router};
 
 use std::net::SocketAddr;
 
-
 use tower_http::cors::{Any, CorsLayer};
-
 
 #[tokio::main]
 async fn main() {
-    let store = Store::new();
+    let store = store::Store::new("postgres://postgres:4411@localhost:3030/rustwebdev").await;
+    sqlx::migrate!()
+        .run(&store.clone().connection)
+    .await
+    .expect("Cannot run migration");
+
 
     let cors = CorsLayer::new()
         .allow_origin(Any)
@@ -40,7 +36,6 @@ async fn main() {
 
     let app = Router::new()
         .route("/questions", get(get_questions))
-        .route("/question/:id", get(get_question))
         .route("/questions", post(add_question))
         .route("/questions/:id", put(update_question))
         .route("/questions/:id", delete(delete_question))

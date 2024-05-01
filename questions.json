@@ -1,90 +1,90 @@
 {
   "1": {
-    "id": "1",
+    "id": 1,
     "title": "How?",
     "content": "Please help!",
     "tags": ["general"]
   },
   "2": {
-    "id": "2",
+    "id": 2,
     "title": "Where?",
     "content": "Over Here!",
     "tags": ["rust"]
   },
   "3": {
-    "id": "3",
+    "id": 3,
     "title": "When?",
     "content": "Very Soon!",
     "tags": ["rust"]
   },
   "4": {
-    "id": "4",
+    "id": 4,
     "title": "What?",
     "content": "I don't know!",
     "tags": ["question"]
   },
   "5": {
-    "id": "5",
+    "id": 5,
     "title": "Why?",
     "content": "For what reason?",
     "tags": ["philosophy"]
   },
   "6": {
-    "id": "6",
+    "id": 6,
     "title": "Who?",
     "content": "The mystery!",
     "tags": ["mystery"]
   },
   "7": {
-    "id": "7",
+    "id": 7,
     "title": "Which?",
     "content": "Choose one!",
     "tags": ["choice"]
   },
   "8": {
-    "id": "8",
+    "id": 8,
     "title": "Whom?",
     "content": "To whom it may concern!",
     "tags": ["formal"]
   },
   "9": {
-    "id": "9",
+    "id": 9,
     "title": "Whose?",
     "content": "Belonging to whom?",
     "tags": ["ownership"]
   },
   "10": {
-    "id": "10",
+    "id": 10,
     "title": "Whither?",
     "content": "Where to?",
     "tags": ["direction"]
   },
   "11": {
-    "id": "11",
+    "id": 11,
     "title": "Whence?",
     "content": "From where?",
     "tags": ["origin"]
   },
   "12": {
-    "id": "12",
+    "id": 12,
     "title": "Whenceforth?",
     "content": "From now on?",
     "tags": ["future"]
   },
   "13": {
-    "id": "13",
+    "id": 13,
     "title": "Whereto?",
     "content": "To where?",
     "tags": ["destination"]
   },
   "14": {
-    "id": "14",
+    "id": 14,
     "title": "Wheresoever?",
     "content": "Wherever it may be!",
     "tags": ["wherever"]
   },
   "15": {
-    "id": "15",
+    "id": 15,
     "title": "Whitherward?",
     "content": "In which direction?",
     "tags": ["direction"]

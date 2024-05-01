@@ -1,31 +1,41 @@
-
 use axum::body::Body;
+use axum::extract::Path;
+
+use crate::types::pagination::extract_pagination;
+use crate::types::pagination::Pagination;
+
+use crate::types::questions::NewQuestion;
 
 use axum::Json;
 use axum::{
-    extract::State,
+    extract::{Query, State},
     http::StatusCode,
-    response::Response,
+    response::{IntoResponse, Response},
 };
+use std::result::Result::Ok;
 
 
-
+extern crate serde_json;
 
 use crate::store::Store;
-use crate::types::answer::Answer;
+use crate::types::pagination::MyError;
 
 
-// POST question
-pub async fn add_answer (
-    State(store): State<Store>,
-    Json(answer): Json<Answer>,
-) -> Response<Body> {
+use crate::types::answer::NewAnswer;
+
+
+pub async fn add_answer(
+    State(store): State<Store>, 
+    Json(new_answer): Json<NewAnswer>, 
+)-> Result<Response, MyError> {
     
-    // Add to JSON
-    store.add_answer_store(answer).await;
-
-    Response::builder()
+    if let Err(e) = store.add_answer(new_answer).await {
+        return Err(MyError::DatabaseQueryError);
+    }
+    let response = Response::builder()
         .status(StatusCode::OK)
-        .body(Body::from("Answer added"))
-        .unwrap()
+        .body(Body::from("Answer Added"))
+        .unwrap();
+
+    Ok(response)
 }
