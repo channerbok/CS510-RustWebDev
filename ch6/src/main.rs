@@ -1,37 +1,29 @@
+mod routes;
 mod store;
 mod types;
-mod routes;
-use crate::routes::question::get_questions;
-use crate::routes::question::get_question;
 use crate::routes::answer::add_answer;
-use crate::routes::question::handler_fallback;
 use crate::routes::question::add_question;
-use crate::routes::question::update_question;
 use crate::routes::question::delete_question;
+use crate::routes::question::get_question;
+use crate::routes::question::get_questions;
+use crate::routes::question::handler_fallback;
+use crate::routes::question::update_question;
 
 use crate::store::Store;
 
-use tracing_subscriber::fmt::format::FmtSpan;
 use axum::http::{header, Method};
+use tracing_subscriber::fmt::format::FmtSpan;
 
-use axum::routing::{post, put, delete};
+use axum::routing::{delete, post, put};
 
-use axum::{
-
-    routing::get,
-    Router,
-};
-
+use axum::{routing::get, Router};
 
 use std::net::SocketAddr;
 
-
 use tower_http::cors::{Any, CorsLayer};
-
 
 #[tokio::main]
 async fn main() {
-
     let log_filter = std::env::var("RUST_LOG")
         .unwrap_or_else(|_| "practical_rust_book=info,warp=error".to_owned());
 
@@ -39,7 +31,7 @@ async fn main() {
         .with_env_filter(log_filter)
         .with_span_events(FmtSpan::CLOSE)
         .init();
-    
+
     let store = Store::new();
 
     let cors = CorsLayer::new()

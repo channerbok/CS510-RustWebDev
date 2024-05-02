@@ -1,38 +1,37 @@
 mod routes;
 mod store;
 mod types;
+
 use crate::routes::answer::add_answer;
 use crate::routes::question::add_question;
 use crate::routes::question::delete_question;
 use crate::routes::question::get_questions;
 use crate::routes::question::handler_fallback;
 use crate::routes::question::update_question;
-use std::env;
+
 use tracing_subscriber::fmt::format::FmtSpan;
-use tracing_subscriber::prelude::*;
-use tracing_subscriber::FmtSubscriber;
-
 use axum::http::{header, Method};
-
 use axum::routing::{delete, post, put};
-
 use axum::{routing::get, Router};
-
 use std::net::SocketAddr;
-
 use tower_http::cors::{Any, CorsLayer};
 
 #[tokio::main]
 async fn main() {
+    // Logging
     let log_filter = std::env::var("RUST_LOG")
         .unwrap_or_else(|_| "practical_rust_book=info,warp=error".to_owned());
 
+    // Traces the program
     tracing_subscriber::fmt()
         .with_env_filter(log_filter)
         .with_span_events(FmtSpan::CLOSE)
         .init();
 
+    // Creates a new store and connects it to the postgres database
     let store = store::Store::new("postgres://postgres:4411@localhost:3030/rustwebdev").await;
+
+    // Executes the migration from store to database
     sqlx::migrate!()
         .run(&store.clone().connection)
         .await

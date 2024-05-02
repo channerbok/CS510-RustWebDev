@@ -22,30 +22,34 @@ use axum::{
 };
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::fmt;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use std::fmt;
 use tower_http::cors::{Any, CorsLayer};
 
+// Thus stores our hashmap of questions and can be passed around the program
+// Mock database type
 #[derive(Clone)]
 struct Store {
+    // Question hashmap
     questions: Arc<RwLock<HashMap<QuestionId, Question>>>,
 }
 
 impl Store {
+    // Creates a new instance of Store
     fn new() -> Self {
         Store {
             questions: Arc::new(RwLock::new(self::Store::init())),
         }
     }
-
+    // Initializes the questions hashmap from a JSON file
     fn init() -> HashMap<QuestionId, Question> {
         let file = include_str!("../questions.json");
         serde_json::from_str(file).expect("can't read questions.json")
     }
 }
 
-
+// Question struct that serves as the quetion and its contents
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
 struct Question {
     id: i32,
@@ -54,33 +58,29 @@ struct Question {
     tags: Option<Vec<String>>,
 }
 
-
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
 struct QuestionId(i32);
 
-
-
-
+// Fall back in case our route fails to find anything
 async fn handler_fallback() -> Response {
     (StatusCode::NOT_FOUND, "404 Not Found").into_response()
 }
 
-
-
-// Handler to get questions
+// Handler to get all questions from the json file
+// Also Uuses pagination
 async fn get_questions(
     Query(params): Query<HashMap<String, String>>,
     State(store): State<Store>,
 ) -> Result<Response, MyError> {
-    
-    
     if let Some(n) = params.get("start") {
         println!("{:?}", n.parse::<usize>());
     }
 
+    // Reads in question
     let questions = store.questions.read().await;
     let error_param = MyError::MissingParameters;
 
+    // Error handle for parser error
     let _start_param = match params.get("start") {
         Some(start) => match start.parse::<usize>() {
             Ok(start) => Some(start),
@@ -129,7 +129,6 @@ impl IntoResponse for MyError {
     }
 }
 
-
 impl fmt::Display for MyError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -138,7 +137,6 @@ impl fmt::Display for MyError {
         }
     }
 }
-
 
 #[tokio::main]
 async fn main() {

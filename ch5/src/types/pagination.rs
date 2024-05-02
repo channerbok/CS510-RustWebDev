@@ -1,19 +1,12 @@
 use axum::body::Body;
 
-
-
 use axum::{
-
     http::StatusCode,
     response::{IntoResponse, Response},
 };
 
-
 use std::collections::HashMap;
 use std::result::Result::Ok;
-
-
-
 
 #[derive(Debug)]
 pub enum MyError {
@@ -48,7 +41,6 @@ pub struct Pagination {
     pub start: usize,
     pub end: usize,
 }
-
 
 #[allow(dead_code)]
 // Formats pagination

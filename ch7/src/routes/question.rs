@@ -14,18 +14,14 @@ use axum::{
 };
 use std::result::Result::Ok;
 use tracing::info;
-use tracing::{event, instrument, Level};
+use tracing::{event, Level};
 extern crate serde_json;
-use serde_json::json;
-use std::collections::HashMap;
 
-use tokio::fs::File;
-use tokio::fs::OpenOptions;
-use tokio::io::AsyncWriteExt;
+use std::collections::HashMap;
 
 use crate::store::Store;
 use crate::types::pagination::MyError;
-use crate::types::questions::{Question, QuestionId};
+use crate::types::questions::Question;
 
 // Fallback
 pub async fn handler_fallback() -> Response {
@@ -57,7 +53,7 @@ pub async fn get_questions(
         .await
     {
         Ok(res) => res,
-        Err(e) => return Err(MyError::DatabaseQueryError),
+        Err(_e) => return Err(MyError::DatabaseQueryError),
     };
 
     // Return the entire json response when pagination is not present in URL
@@ -74,7 +70,7 @@ pub async fn add_question(
     State(store): State<Store>,
     Json(new_question): Json<NewQuestion>,
 ) -> Result<Response, MyError> {
-    if let Err(e) = store.add_question(new_question).await {
+    if let Err(_e) = store.add_question(new_question).await {
         return Err(MyError::DatabaseQueryError);
     }
     let response = Response::builder()
@@ -93,7 +89,7 @@ pub async fn update_question(
 ) -> Result<Response<Body>, MyError> {
     let res = match store.update_question(question, id).await {
         Ok(res) => res,
-        Err(e) => return Err(MyError::DatabaseQueryError),
+        Err(_e) => return Err(MyError::DatabaseQueryError),
     };
 
     let response = Response::builder()
@@ -109,7 +105,7 @@ pub async fn delete_question(
     Path(id): Path<i32>,
     State(store): State<Store>,
 ) -> Result<Response, MyError> {
-    if let Err(e) = store.delete_question(id).await {
+    if let Err(_e) = store.delete_question(id).await {
         return Err(MyError::DatabaseQueryError);
     }
 

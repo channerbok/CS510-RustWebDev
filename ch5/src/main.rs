@@ -1,33 +1,25 @@
+mod routes;
 mod store;
 mod types;
-mod routes;
-use crate::routes::question::get_questions;
-use crate::routes::question::get_question;
 use crate::routes::answer::add_answer;
-use crate::routes::question::handler_fallback;
 use crate::routes::question::add_question;
-use crate::routes::question::update_question;
 use crate::routes::question::delete_question;
+use crate::routes::question::get_question;
+use crate::routes::question::get_questions;
+use crate::routes::question::handler_fallback;
+use crate::routes::question::update_question;
 
 use crate::store::Store;
 
-
 use axum::http::{header, Method};
 
-use axum::routing::{post, put, delete};
+use axum::routing::{delete, post, put};
 
-use axum::{
-
-    routing::get,
-    Router,
-};
-
+use axum::{routing::get, Router};
 
 use std::net::SocketAddr;
 
-
 use tower_http::cors::{Any, CorsLayer};
-
 
 #[tokio::main]
 async fn main() {

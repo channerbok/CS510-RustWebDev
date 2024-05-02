@@ -8,17 +8,16 @@ use axum::{
     response::{IntoResponse, Response},
 };
 
+use serde_json::json;
 use std::collections::HashMap;
 use std::result::Result::Ok;
-use serde_json::json;
 use tokio::fs::File;
 use tokio::fs::OpenOptions;
 use tokio::io::AsyncWriteExt;
 
-use crate::types::pagination::MyError;
 use crate::store::Store;
+use crate::types::pagination::MyError;
 use crate::types::questions::{Question, QuestionId};
-
 
 // Adds the the POST question to the json file
 pub async fn add_question_to_file(question: &Question) -> tokio::io::Result<File> {
@@ -44,15 +43,12 @@ pub async fn handler_fallback() -> Response {
     (StatusCode::NOT_FOUND, "404 Not Found").into_response()
 }
 
-
 // Pagination struct
 #[derive(Debug)]
 struct Pagination {
     start: usize,
     end: usize,
 }
-
-
 
 #[allow(private_interfaces)]
 // Formats pagination
@@ -131,13 +127,11 @@ pub async fn get_questions(
     Ok(response)
 }
 
-
 // Get a single question with using ID as a query parameter (http://localhost:3000/question/1)
 pub async fn get_question(
     Path(id): Path<QuestionId>,
     State(store): State<Store>,
 ) -> Result<Response, MyError> {
-    
     let store_clone = store.clone();
     let question = store_clone.get_question(id).await;
 
@@ -163,7 +157,6 @@ pub async fn add_question(
     State(store): State<Store>,
     Json(question): Json<Question>,
 ) -> Response<Body> {
-    
     // Add to JSON
     let _temp = add_question_to_file(&question).await;
 
@@ -176,21 +169,16 @@ pub async fn add_question(
         .unwrap()
 }
 
-
 // Updates question, PUT implemenation
 pub async fn update_question(
     State(store): State<Store>,
     Path(id): Path<QuestionId>,
     Json(question): Json<Question>,
 ) -> Result<Response, MyError> {
-    
-    
-
     match store.questions.write().await.get_mut(&id) {
         Some(q) => *q = question,
         None => return Err(MyError::QuestionNotFound),
     }
-
 
     let response = Response::builder()
         .status(StatusCode::OK)
@@ -200,14 +188,11 @@ pub async fn update_question(
     Ok(response)
 }
 
-
-
 // Deletes question, DELETE implemenation
 pub async fn delete_question(
     State(store): State<Store>,
-   Path(id): Path<QuestionId>,
+    Path(id): Path<QuestionId>,
 ) -> Result<Response, MyError> {
-
     match store.questions.write().await.remove(&id) {
         Some(_) => {
             let response = Response::builder()

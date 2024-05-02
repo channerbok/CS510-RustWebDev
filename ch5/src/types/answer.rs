@@ -2,8 +2,6 @@ use serde::{Deserialize, Serialize};
 
 use crate::types::questions::QuestionId;
 
-
-
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Answer {
     pub id: AnswerId,

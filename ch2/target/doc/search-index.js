@@ -1,0 +1,5 @@
+var searchIndex = new Map(JSON.parse('[\
+["qa_project",{"doc":"","t":"FFNNNNONNNNNONNHNOONNNNNN","n":["Question","QuestionId","borrow","borrow","borrow_mut","borrow_mut","content","fmt","fmt","from","from","from_str","id","into","into","main","new","tags","title","try_from","try_from","try_into","try_into","type_id","type_id"],"q":[[0,"qa_project"],[25,"core::fmt"],[26,"core::fmt"],[27,"alloc::string"],[28,"alloc::vec"],[29,"core::option"],[30,"core::any"]],"d":["","","","","","","","","","Returns the argument unchanged.","Returns the argument unchanged.","","","Calls <code>U::from(self)</code>.","Calls <code>U::from(self)</code>.","","","","","","","","","",""],"i":[0,0,1,4,1,4,1,1,4,1,4,4,1,1,4,0,1,1,1,1,4,1,4,1,4],"f":"``{ce{}{}}000`{{bd}f}{{hd}f}{cc{}}0{j{{l{hc}}}{}}`44{{}n}{{hA`A`{Ad{{Ab{A`}}}}}b}``{c{{l{e}}}{}{}}000{cAf{}}0","c":[],"p":[[5,"Question",0],[5,"Formatter",25],[8,"Result",25],[5,"QuestionId",0],[1,"str"],[6,"Result",26],[1,"unit"],[5,"String",27],[5,"Vec",28],[6,"Option",29],[5,"TypeId",30]],"b":[]}]\
+]'));
+if (typeof exports !== 'undefined') exports.searchIndex = searchIndex;
+else if (window.initSearch) window.initSearch(searchIndex);

@@ -1,17 +1,9 @@
 use sqlx::postgres::{PgPool, PgPoolOptions, PgRow};
-use sqlx::Error;
 use sqlx::Row;
-
-use crate::types::questions::NewQuestion;
-
-use serde_json::json;
-
 use std::result::Result::Ok;
 
-use tokio::fs::File;
-use tokio::fs::OpenOptions;
-use tokio::io::AsyncWriteExt;
 
+use crate::types::questions::NewQuestion;
 use crate::types::pagination::MyError;
 use crate::types::{
     answer::{Answer, AnswerId, NewAnswer},
@@ -22,6 +14,7 @@ pub struct Store {
     pub connection: PgPool,
 }
 
+// Connect PostgreSQL database to store class
 impl Store {
     pub async fn new(db_url: &str) -> Self {
         let db_pool = match PgPoolOptions::new()
@@ -37,6 +30,7 @@ impl Store {
         }
     }
 
+    // Grabs all questions in database
     pub async fn get_questions(
         &self,
         limit: Option<i32>,
@@ -62,6 +56,7 @@ impl Store {
         }
     }
 
+    // Adds a new question to the database
     pub async fn add_question(&self, new_question: NewQuestion) -> Result<Question, sqlx::Error> {
         match sqlx::query(
             "INSERT INTO questions (title, content, tags) VALUES ($1, $2, $3)
@@ -84,6 +79,7 @@ impl Store {
         }
     }
 
+    // Updates a question in the data base
     pub async fn update_question(
         &self,
         question: Question,
@@ -113,6 +109,7 @@ impl Store {
         }
     }
 
+    // Deletes question from database
     pub async fn delete_question(&self, question_id: i32) -> Result<bool, sqlx::Error> {
         match sqlx::query("DELETE FROM questions WHERE id = $1")
             .bind(question_id)
@@ -124,6 +121,7 @@ impl Store {
         }
     }
 
+    // Adds answer to the data base by matching the answer id to the question id
     pub async fn add_answer(&self, new_answer: NewAnswer) -> Result<Answer, MyError> {
         match sqlx::query("INSERT INTO answers (content, question_id) VALUES ($1, $2)")
             .bind(new_answer.content)

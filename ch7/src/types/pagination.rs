@@ -8,6 +8,7 @@ use axum::{
 use std::collections::HashMap;
 use std::result::Result::Ok;
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub enum MyError {
     ParseError(std::num::ParseIntError),

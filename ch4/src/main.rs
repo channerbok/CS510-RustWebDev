@@ -1,9 +1,8 @@
-
 use axum::body::Body;
 use axum::extract::Path;
 use axum::http::{header, Method};
 
-use axum::routing::{post, put, delete};
+use axum::routing::{delete, post, put};
 use axum::Json;
 use axum::{
     extract::{Query, State},
@@ -28,29 +27,24 @@ use tokio::io::AsyncWriteExt;
 use tokio::sync::RwLock;
 use tower_http::cors::{Any, CorsLayer};
 
-// Answer Key
+// Answer ID that helps uniquely identify answers
 #[derive(Deserialize, Serialize, Debug, Clone, PartialEq, Eq, Hash)]
 struct AnswerId(String);
-
 
 // Answer Struct
 #[derive(Serialize, Deserialize, Debug, Clone)]
 struct Answer {
- id: AnswerId,
- content: String,
- question_id: QuestionId,
+    id: AnswerId,
+    content: String,
+    question_id: QuestionId,
 }
-
-
 
 // Mock Data base type
 #[derive(Clone)]
 struct Store {
     questions: Arc<RwLock<HashMap<QuestionId, Question>>>,
     answers: Arc<RwLock<HashMap<AnswerId, Answer>>>,
-
 }
-
 
 // Initialize data base
 // Functions to delete/change data base
@@ -61,8 +55,6 @@ impl Store {
             answers: Arc::new(RwLock::new(HashMap::new())),
         }
     }
-
-
 
     fn init() -> HashMap<QuestionId, Question> {
         let file = include_str!("../questions.json");
@@ -84,17 +76,11 @@ impl Store {
         self
     }
 
-    async fn add_answer_store(self, answer: Answer) -> Self{
-        
-        self.answers
-            .write()
-            .await
-            .insert(answer.id.clone(), answer);
+    // Adds answer to hashmap
+    async fn add_answer_store(self, answer: Answer) -> Self {
+        self.answers.write().await.insert(answer.id.clone(), answer);
         self
     }
-
-
-
 }
 
 // Adds the the POST question to the json file
@@ -116,9 +102,6 @@ async fn add_question_to_file(question: &Question) -> tokio::io::Result<File> {
     Ok(file)
 }
 
-
-
-
 // Question struct
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
 struct Question {
@@ -128,17 +111,14 @@ struct Question {
     tags: Option<Vec<String>>,
 }
 
-
-// Question id 
+// Question id
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
 struct QuestionId(String);
-
 
 // Fallback
 async fn handler_fallback() -> Response {
     (StatusCode::NOT_FOUND, "404 Not Found").into_response()
 }
-
 
 // Pagination struct
 #[derive(Debug)]
@@ -223,13 +203,11 @@ async fn get_questions(
     Ok(response)
 }
 
-
 // Get a single question with using ID as a query parameter (http://localhost:3000/question/1)
 async fn get_question(
     Path(id): Path<QuestionId>,
     State(store): State<Store>,
 ) -> Result<Response, MyError> {
-    
     let store_clone = store.clone();
     let question = store_clone.get_question(id).await;
 
@@ -255,7 +233,6 @@ async fn add_question(
     State(store): State<Store>,
     Json(question): Json<Question>,
 ) -> Response<Body> {
-    
     // Add to JSON
     let _temp = add_question_to_file(&question).await;
 
@@ -268,13 +245,9 @@ async fn add_question(
         .unwrap()
 }
 
-// POST question
-async fn add_answer (
-    State(store): State<Store>,
-    Json(answer): Json<Answer>,
-) -> Response<Body> {
-    
-    // Add to JSON
+// POST answer
+async fn add_answer(State(store): State<Store>, Json(answer): Json<Answer>) -> Response<Body> {
+    // Add to Hashmap
     store.add_answer_store(answer).await;
 
     Response::builder()
@@ -289,14 +262,10 @@ async fn update_question(
     Path(id): Path<QuestionId>,
     Json(question): Json<Question>,
 ) -> Result<Response, MyError> {
-    
-    
-
     match store.questions.write().await.get_mut(&id) {
         Some(q) => *q = question,
         None => return Err(MyError::QuestionNotFound),
     }
-
 
     let response = Response::builder()
         .status(StatusCode::OK)
@@ -306,14 +275,11 @@ async fn update_question(
     Ok(response)
 }
 
-
-
 // Deletes question, DELETE implemenation
 async fn delete_question(
     State(store): State<Store>,
-   Path(id): Path<QuestionId>,
+    Path(id): Path<QuestionId>,
 ) -> Result<Response, MyError> {
-
     match store.questions.write().await.remove(&id) {
         Some(_) => {
             let response = Response::builder()
@@ -326,8 +292,6 @@ async fn delete_question(
     }
 }
 
-
-
 // Custom Error type
 #[derive(Debug)]
 enum MyError {
@@ -335,7 +299,6 @@ enum MyError {
     MissingParameters,
     QuestionNotFound,
 }
-
 
 // Custom error type implementation, converts to response
 impl IntoResponse for MyError {
@@ -357,8 +320,6 @@ impl IntoResponse for MyError {
     }
 }
 
-
-
 impl fmt::Display for MyError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -368,8 +329,6 @@ impl fmt::Display for MyError {
         }
     }
 }
-
-
 
 #[tokio::main]
 async fn main() {
