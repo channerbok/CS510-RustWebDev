@@ -23,7 +23,9 @@ use crate::store::Store;
 use crate::types::pagination::MyError;
 use crate::types::questions::Question;
 
-// Fallback
+
+
+/// Handles when router find nothing
 pub async fn handler_fallback() -> Response {
     (StatusCode::NOT_FOUND, "404 Not Found").into_response()
 }

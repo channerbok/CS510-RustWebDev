@@ -1,0 +1,1 @@
+fn(axum::extract::State<Store>, HashMap<std::string::String, std::string::String>) -> impl Future<Output = Result<impl IntoResponse, MyError>> {get_questions}
