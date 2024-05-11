@@ -2,13 +2,11 @@
 Channer Bok
 Repo for assignments in CS 510 Rust Web Dev course
 
-Rust Axum REST CRUD Implementation.
-
-This project consists of a Question based data display.
-It utilizes a json file filled with questions and their IDs and
-uses the GET,PUT,POST,DELETE features of Axum to populate the questions on the 
-web server. It creates the web server hosted on http://localhost:3000 and uses various 
-routes to deliver different results.
+This repo is sequential in following the Rust Web Development chapters.
+Each chapter has its own implementation, most of them building on each other.
+You can execute Chapters 2-7 with cargo run and interacting with the REST API.
+Chapter 10 shifts towards a containerized model and is ran using Docker Compose up.
+Each chapter has its own small readme file that documents that implementation.
 
 You can utilize the REST API via the URL
 All Questions 
