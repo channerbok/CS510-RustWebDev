@@ -6,6 +6,7 @@ use crate::routes::answer::add_answer;
 use crate::routes::question::add_question;
 use crate::routes::question::delete_question;
 use crate::routes::question::get_questions;
+
 use crate::routes::question::handler_fallback;
 use crate::routes::question::update_question;
 
@@ -50,7 +51,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/questions", get(get_questions))
-        .route("/questionz", post(add_question))
+        .route("/questions", post(add_question))
         .route("/questions/:id", put(update_question))
         .route("/questions/:id", delete(delete_question))
         .route("/answer", post(add_answer))

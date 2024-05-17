@@ -146,8 +146,8 @@ fn extract_pagination(params: HashMap<String, String>) -> Result<Pagination, MyE
 }
 
 // Handler to get questions
-// Handles either query parameters in the request i.e. (http://localhost:3000/questions?start=0&end=5)
-// Also handles the base line request and returns entire question json i.e. (http://localhost:3000/questions)
+// Handles either query parameters in the request i.e. (localhost:3000/questions?start=0&end=5)
+// Also handles the base line request and returns entire question json i.e. (ocalhost:3000/questions)
 async fn get_questions(
     Query(params): Query<HashMap<String, String>>,
     State(store): State<Store>,
@@ -233,6 +233,7 @@ async fn add_question(
     State(store): State<Store>,
     Json(question): Json<Question>,
 ) -> Response<Body> {
+    
     // Add to JSON
     let _temp = add_question_to_file(&question).await;
 

@@ -3,7 +3,7 @@ use axum::extract::Path;
 
 use crate::types::pagination::extract_pagination;
 use crate::types::pagination::Pagination;
-
+use axum::response::Html;
 use crate::types::questions::NewQuestion;
 
 use axum::Json;
@@ -29,15 +29,13 @@ pub async fn handler_fallback() -> Response {
 }
 
 // Handler to get questions
-// Handles either query parameters in the request i.e. (http://localhost:3000/questions?start=0&end=5)
+// Handles either query parameters in the request i.e. (http://localhost:3000/questions?limit=0&offset=5)
 // Also handles the base line request and returns entire question json i.e. (http://localhost:3000/questions)
 pub async fn get_questions(
     Query(params): Query<HashMap<String, String>>,
     State(store): State<Store>,
 ) -> Result<impl IntoResponse, MyError> {
-    log::info!("Start querying questions");
-    event!(target: "practical_rust_book", Level::INFO, "querying questions");
-    log::info!("Query parameters: {:?}", params);
+    
     let mut pagination = Pagination::default();
 
     // Return a set amount of questions based upon query parameters in request
@@ -49,28 +47,49 @@ pub async fn get_questions(
 
     info!(pagination = false);
     log::info!("No pagination used");
-    let res: Vec<Question> = match store
-        .get_questions(pagination.limit, pagination.offset)
-        .await
-    {
-        Ok(res) => res,
-        Err(_e) => return Err(MyError::DatabaseQueryError),
-    };
 
-    // Return the entire json response when pagination is not present in URL
-    let response = Response::builder()
-        .status(StatusCode::OK)
-        .body(Body::from(serde_json::to_string_pretty(&*res).unwrap()))
-        .unwrap();
+     let questions_result = store.get_questions(pagination.limit, pagination.offset).await;
+    
+    match questions_result {
+        Ok(questions) => {
 
-    Ok(response)
+            let mut html_string = String::from("<html><head><title>Questions</title></head><body><h1>Questions</h1><ul>");
+            
+            for question in questions {
+                let tags_str = match &question.tags {
+                    Some(tags) => tags.join(", "),
+                    None => String::from("No tags"),
+                };
+                html_string.push_str(&format!(
+                    "<li><h2>{}</h2><p>{}</p><p>Question ID: {}</p><p>Tags: {}</p></li>",
+                    question.title,
+                    question.content,
+                    question.id.0,
+                    tags_str,
+                ));
+            }
+
+            html_string.push_str("</ul></body></html>");
+
+            Ok(Html(html_string))
+        }
+        Err(_e) => {
+            Err(MyError::DatabaseQueryError)
+        }
+    }
+     
 }
+
+
 
 // POST question
 pub async fn add_question(
     State(store): State<Store>,
     Json(new_question): Json<NewQuestion>,
 ) -> Result<Response, MyError> {
+    
+     log::info!("ADD");
+    event!(target: "practical_rust_book", Level::INFO, "ADD");
     if let Err(_e) = store.add_question(new_question).await {
         return Err(MyError::DatabaseQueryError);
     }

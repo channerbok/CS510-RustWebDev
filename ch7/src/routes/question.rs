@@ -1,6 +1,7 @@
 use axum::body::Body;
 use axum::extract::Path;
 
+
 use crate::types::pagination::extract_pagination;
 use crate::types::pagination::Pagination;
 
@@ -31,25 +32,38 @@ pub async fn handler_fallback() -> Response {
 }
 
 // Handler to get questions
-// Handles either query parameters in the request i.e. (http://localhost:3000/questions?start=0&end=5)
+// Handles either query parameters in the request i.e. (http://localhost:3000/questions?offset=0&limit=5)
 // Also handles the base line request and returns entire question json i.e. (http://localhost:3000/questions)
 pub async fn get_questions(
     Query(params): Query<HashMap<String, String>>,
     State(store): State<Store>,
 ) -> Result<impl IntoResponse, MyError> {
+    //println!("Params: {:?}", params);
+    
     log::info!("Start querying questions");
     event!(target: "practical_rust_book", Level::INFO, "querying questions");
+    
+    
     let mut pagination = Pagination::default();
-
+    
+    
+   log::info!("QQQStart querying questions");
+    event!(target: "QQQpractical_rust_book", Level::INFO, "QQQquerying questions");
+   
+   
+   
+   
     // Return a set amount of questions based upon query parameters in request
     if !params.is_empty() {
-        log::info!("Pagination set {:?}", &pagination);
-        event!(Level::INFO, pagination = true);
+        log::info!("yyyyy");
+        event!(target: "yyyy", Level::INFO, "yyyy");
         pagination = extract_pagination(params)?;
     }
 
+    
     info!(pagination = false);
     log::info!("No pagination used");
+    event!(target: "practical_rust_book", Level::INFO, "PAGE2");
     let res: Vec<Question> = match store
         .get_questions(pagination.limit, pagination.offset)
         .await
@@ -70,10 +84,13 @@ pub async fn get_questions(
 // POST question
 pub async fn add_question(
     State(store): State<Store>,
-    Json(new_question): Json<NewQuestion>,
+    Json(new_question): Json<Question>,
 ) -> Result<Response, MyError> {
+
+    log::info!("ADD");
+    event!(target: "practical_rust_book", Level::INFO, "ADD");
     if let Err(_e) = store.add_question(new_question).await {
-        return Err(MyError::DatabaseQueryError);
+        return Err(MyError::QuestionNotFound);
     }
     let response = Response::builder()
         .status(StatusCode::OK)

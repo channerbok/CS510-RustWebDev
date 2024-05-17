@@ -51,6 +51,7 @@ pub struct Pagination {
 #[allow(dead_code)]
 // Formats pagination
 pub fn extract_pagination(params: HashMap<String, String>) -> Result<Pagination, MyError> {
+    println!("Params: {:?}", params);
     if params.contains_key("limit") && params.contains_key("offset") {
         return Ok(Pagination {
             limit: Some(
@@ -68,5 +69,5 @@ pub fn extract_pagination(params: HashMap<String, String>) -> Result<Pagination,
                 .map_err(MyError::ParseError)?,
         });
     }
-    Err(MyError::MissingParameters)
+    Err(MyError::QuestionNotFound)
 }

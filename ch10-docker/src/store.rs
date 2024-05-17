@@ -58,6 +58,11 @@ impl Store {
 
     // Adds a new question to the database
     pub async fn add_question(&self, new_question: NewQuestion) -> Result<Question, sqlx::Error> {
+        println!("New question: {:?}", new_question);
+        println!("New question: {:?}", new_question.title);
+         println!("New question: {:?}", new_question.content);
+        
+        
         match sqlx::query(
             "INSERT INTO questions (title, content, tags) VALUES ($1, $2, $3)
                 RETURNING id, title, content, tags",
