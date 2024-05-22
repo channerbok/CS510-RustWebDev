@@ -48,24 +48,44 @@ pub async fn get_questions(
     info!(pagination = false);
     log::info!("No pagination used");
 
-     let questions_result = store.get_questions(pagination.limit, pagination.offset).await;
-    
+    let questions_result = store.get_questions(pagination.limit, pagination.offset).await;
+
     match questions_result {
         Ok(questions) => {
+            let mut html_string = String::from(
+                "<html><head><title>Questions</title></head><body><h1>Questions</h1>",
+            );
 
-            let mut html_string = String::from("<html><head><title>Questions</title></head><body><h1>Questions</h1><ul>");
-            
+            html_string.push_str(r#"
+                <script>
+                function showRandomQuestion() {
+                    var questions = document.querySelectorAll('.question');
+                    questions.forEach(q => q.style.display = 'none');
+                    var randomIndex = Math.floor(Math.random() * questions.length);
+                    questions[randomIndex].style.display = 'block';
+                }
+
+                function showAllQuestions() {
+                    var questions = document.querySelectorAll('.question');
+                    questions.forEach(q => q.style.display = 'block');
+                }
+                </script>
+            "#);
+
+            html_string.push_str(r#"
+                <button onclick="showRandomQuestion()">Random</button>
+                <button onclick="showAllQuestions()">Show All</button>
+                <ul>
+            "#);
+
             for question in questions {
                 let tags_str = match &question.tags {
                     Some(tags) => tags.join(", "),
                     None => String::from("No tags"),
                 };
                 html_string.push_str(&format!(
-                    "<li><h2>{}</h2><p>{}</p><p>Question ID: {}</p><p>Tags: {}</p></li>",
-                    question.title,
-                    question.content,
-                    question.id.0,
-                    tags_str,
+                    "<li class='question'><h2>{}</h2><p>{}</p><p>Question ID: {}</p><p>Tags: {}</p></li>",
+                    question.title, question.content, question.id.0, tags_str,
                 ));
             }
 
@@ -73,11 +93,8 @@ pub async fn get_questions(
 
             Ok(Html(html_string))
         }
-        Err(_e) => {
-            Err(MyError::DatabaseQueryError)
-        }
+        Err(_e) => Err(MyError::DatabaseQueryError),
     }
-     
 }
 
 
