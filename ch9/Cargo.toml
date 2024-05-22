@@ -1,0 +1,29 @@
+[package]
+name = "qa_project"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tokio = { version = "1.2", features = ["full"] }
+axum = "0.7.5"
+hyper = { version = "0.14", features = ["server","tcp"] }
+serde = { version = "1.0", features = ["derive"] }
+anyhow = "1.0"
+tower = "0.4"
+tower-http = { version = "0.5.2", features = ["cors"] }
+serde_json = "1.0"
+log = "0.4"
+env_logger = "0.9"
+log4rs = "1.0"
+tracing = "0.1"
+tracing-futures = "0.2"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+sqlx = { version = "0.7.4", features = [ "runtime-tokio-rustls", "migrate", "postgres" ]} 
+rust-argon2 = "1.0"
+paseto = "2.0"
+reqwest = { version = "0.11", features = ["json"] }
+uuid = { version = "0.8", features = ["v4"] }
+rand = "0.8"
+chrono = "0.4.19"
