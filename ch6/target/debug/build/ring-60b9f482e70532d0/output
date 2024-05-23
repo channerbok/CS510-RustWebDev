@@ -1,3 +1,0 @@
-cargo:rustc-link-lib=static=ring-core
-cargo:rustc-link-lib=static=ring-test
-cargo:rustc-link-search=native=C:\CS510-RustWebDev\ch6\target\debug\build\ring-60b9f482e70532d0\out

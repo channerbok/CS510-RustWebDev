@@ -1,3 +1,0 @@
-(function() {var implementors = {
-"qa_project":[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.77.0/core/marker/trait.Unpin.html\" title=\"trait core::marker::Unpin\">Unpin</a> for <a class=\"struct\" href=\"qa_project/struct.Question.html\" title=\"struct qa_project::Question\">Question</a>",1,["qa_project::Question"]],["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.77.0/core/marker/trait.Unpin.html\" title=\"trait core::marker::Unpin\">Unpin</a> for <a class=\"struct\" href=\"qa_project/struct.QuestionId.html\" title=\"struct qa_project::QuestionId\">QuestionId</a>",1,["qa_project::QuestionId"]]]
-};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

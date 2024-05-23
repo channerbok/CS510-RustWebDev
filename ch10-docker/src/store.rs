@@ -2,9 +2,12 @@ use sqlx::postgres::{PgPool, PgPoolOptions, PgRow};
 use sqlx::Row;
 use std::result::Result::Ok;
 
+use crate::types::account::AccountId;
 use crate::types::pagination::MyError;
 use crate::types::questions::NewQuestion;
+
 use crate::types::{
+    account::Account,
     answer::{Answer, AnswerId, NewAnswer},
     questions::{Question, QuestionId},
 };
@@ -28,7 +31,43 @@ impl Store {
         }
     }
 
+ 
+    pub async fn get_account(self, email: String) -> Result<Account, MyError> {
+        match sqlx::query("SELECT * from accounts where email = $1")
+            .bind(email)
+            .map(|row: PgRow| Account {
+                id: Some(AccountId(row.get("id"))),
+                email: row.get("email"),
+                password: row.get("password"),
+            })
+            .fetch_one(&self.connection)
+            .await
+        {
+            Ok(account) => Ok(account),
+            Err(error) => {
+                tracing::event!(tracing::Level::ERROR, "{:?}", error);
+                Err(MyError::DatabaseQueryError)
+            }
+        }
+    }
 
+    pub async fn add_account(self, account: Account) -> Result<bool, MyError> {
+        match sqlx::query(
+            "INSERT INTO accounts (email, password)
+            VALUES ($1, $2)",
+        )
+        .bind(account.email)
+        .bind(account.password)
+        .execute(&self.connection)
+        .await
+        {
+            Ok(_) => Ok(true),
+            Err(e) => {
+                tracing::event!(tracing::Level::ERROR, "{:?}", e);
+                Err(MyError::DatabaseQueryError)
+            }
+        }
+    }
 
     // Grabs all questions in database
     pub async fn get_questions(
