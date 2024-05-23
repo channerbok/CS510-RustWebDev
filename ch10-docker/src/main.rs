@@ -43,7 +43,6 @@ async fn main() {
         .await
         .expect("Cannot run migration");
 
-
     let cors = CorsLayer::new()
         .allow_origin(Any)
         .allow_headers([header::CONTENT_TYPE])

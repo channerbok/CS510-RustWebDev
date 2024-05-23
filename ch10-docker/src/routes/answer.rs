@@ -4,7 +4,7 @@ use axum::Json;
 use axum::{extract::State, http::StatusCode, response::Response};
 use std::result::Result::Ok;
 
-extern crate serde_json;
+//extern crate serde_json;
 
 use crate::store::Store;
 use crate::types::pagination::MyError;
@@ -18,6 +18,8 @@ pub async fn add_answer(
     State(store): State<Store>,
     Json(new_answer): Json<NewAnswer>,
 ) -> Result<Response, MyError> {
+   println!("ADD ANSWER");
+    //println!("new answer content: {:?}", new_answer.clone().content);
     if let Err(_e) = store.add_answer(new_answer).await {
         return Err(MyError::DatabaseQueryError);
     }
