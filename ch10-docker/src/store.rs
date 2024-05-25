@@ -31,7 +31,6 @@ impl Store {
         }
     }
 
- 
     pub async fn get_account(self, email: String) -> Result<Account, MyError> {
         match sqlx::query("SELECT * from accounts where email = $1")
             .bind(email)
@@ -95,13 +94,37 @@ impl Store {
         }
     }
 
+    // Grabs all questions in database
+    pub async fn get_answers(
+        &self,
+        limit: Option<i32>,
+        offset: i32,
+    ) -> Result<Vec<Answer>, MyError> {
+        match sqlx::query("SELECT * from answers LIMIT $1 OFFSET $2")
+            .bind(limit)
+            .bind(offset)
+            .map(|row: PgRow| Answer {
+                id: AnswerId(row.get("id")),
+                content: row.get("content"),
+                question_id: QuestionId(row.get("corresponding_question")),
+            })
+            .fetch_all(&self.connection)
+            .await
+        {
+            Ok(questions) => Ok(questions),
+            Err(e) => {
+                tracing::event!(tracing::Level::ERROR, "{:?}", e);
+                Err(MyError::DatabaseQueryError)
+            }
+        }
+    }
+
     // Adds a new question to the database
     pub async fn add_question(&self, new_question: NewQuestion) -> Result<Question, sqlx::Error> {
         println!("New question: {:?}", new_question);
         println!("New question: {:?}", new_question.title);
-         println!("New question: {:?}", new_question.content);
-        
-        
+        println!("New question: {:?}", new_question.content);
+
         match sqlx::query(
             "INSERT INTO questions (title, content, tags) VALUES ($1, $2, $3)
                 RETURNING id, title, content, tags",

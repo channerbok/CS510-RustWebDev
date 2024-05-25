@@ -12,7 +12,6 @@ use crate::routes::question::update_question;
 
 use crate::store::Store;
 
-
 use axum::http::{header, Method};
 use axum::routing::{delete, post, put};
 use axum::{routing::get, Router};
@@ -21,11 +20,8 @@ use std::net::SocketAddr;
 use tower_http::cors::{Any, CorsLayer};
 use tracing_subscriber::fmt::format::FmtSpan;
 
-
 #[tokio::main]
 async fn main() {
-
-    
     // Logging
     let log_filter = std::env::var("RUST_LOG")
         .unwrap_or_else(|_| "practical_rust_book=info,warp=error".to_owned());
@@ -63,7 +59,7 @@ async fn main() {
         Ok(listener) => listener,
         Err(err) => {
             eprintln!("Failed to bind listener: {}", err);
-            return; 
+            return;
         }
     };
 

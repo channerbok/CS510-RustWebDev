@@ -18,7 +18,7 @@ pub async fn add_answer(
     State(store): State<Store>,
     Json(new_answer): Json<NewAnswer>,
 ) -> Result<Response, MyError> {
-   println!("ADD ANSWER");
+    println!("ADD ANSWER");
     //println!("new answer content: {:?}", new_answer.clone().content);
     if let Err(_e) = store.add_answer(new_answer).await {
         return Err(MyError::DatabaseQueryError);
