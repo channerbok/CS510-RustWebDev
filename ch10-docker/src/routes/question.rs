@@ -29,7 +29,6 @@ pub async fn handler_fallback() -> Response {
 }
 
 // Handler to get questions
-// Handles either query parameters in the request i.e. (http://localhost:3000/questions?limit=0&offset=5)
 // Also handles the base line request and returns entire question json i.e. (http://localhost:3000/questions)
 pub async fn get_questions(
     Query(params): Query<HashMap<String, String>>,
@@ -52,6 +51,8 @@ pub async fn get_questions(
         .await;
     let answers_result = store.get_answers(pagination.limit, pagination.offset).await;
 
+    // Displays questions using HTML and Javascript
+    // Two buttons are created, one for a random question and one for showing all
     match (questions_result, answers_result) {
         (Ok(questions), Ok(answers)) => {
             let mut html_string = String::from("<html><head><title>Questions and Answers</title></head><body><h1>Questions and Answers</h1>");
@@ -162,18 +163,23 @@ pub async fn update_question(
     Ok(response)
 }
 
-// Deletes question, DELETE implemenation
+// Deletes question and correlated answer if exists, DELETE implemenation
 pub async fn delete_question(
     Path(id): Path<i32>,
     State(store): State<Store>,
 ) -> Result<Response, MyError> {
+    
+    if let Err(_e) = store.delete_answer(id).await {
+        return Err(MyError::DatabaseQueryError);
+    }
+    
     if let Err(_e) = store.delete_question(id).await {
         return Err(MyError::DatabaseQueryError);
     }
 
     let response = Response::builder()
         .status(StatusCode::OK)
-        .body(Body::from(format!("Question {} Added", id)))
+        .body(Body::from(format!("Question {} Deleted", id)))
         .unwrap();
 
     Ok(response)

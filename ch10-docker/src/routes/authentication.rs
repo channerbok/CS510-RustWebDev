@@ -1,18 +1,20 @@
+/*
+
 use crate::types::account::Account;
-use crate::types::account::AccountId;
 use axum::body::Body;
 use axum::Json;
 use axum::{extract::State, http::StatusCode, response::Response};
-use chrono::prelude::*;
 use std::result::Result::Ok;
 extern crate serde_json;
 use crate::store::Store;
-use crate::types::account::Session;
 use crate::types::pagination::MyError;
 use argon2::{self, Config};
-use axum::response::IntoResponse;
 use rand::Rng;
 
+
+// Register and account and password
+// In progress, currently not being ran
+#[allow(dead_code)]
 pub async fn register(
     State(store): State<Store>,
     Json(account): Json<Account>,
@@ -41,7 +43,7 @@ pub fn hash_password(password: &[u8]) -> String {
     argon2::hash_encoded(password, &salt, &config).unwrap()
 }
 
-/*
+
 pub async fn login(
     State(store): State<Store>,
     Json(login): Json<Account>,

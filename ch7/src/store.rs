@@ -2,8 +2,6 @@ use sqlx::postgres::{PgPool, PgPoolOptions, PgRow};
 use sqlx::Row;
 use std::result::Result::Ok;
 
-
-use crate::types::questions::NewQuestion;
 use crate::types::pagination::MyError;
 use crate::types::{
     answer::{Answer, AnswerId, NewAnswer},
@@ -76,9 +74,9 @@ impl Store {
         {
             Ok(question) => Ok(question),
             Err(e) => {
-            // Print the error message if an error occurs
-            println!("Error adding question: {}", e);
-            Err(e)
+                // Print the error message if an error occurs
+                println!("Error adding question: {}", e);
+                Err(e)
             }
         }
     }
@@ -143,6 +141,18 @@ impl Store {
                 tracing::event!(tracing::Level::ERROR, "{:?}", e);
                 Err(MyError::DatabaseQueryError)
             }
+        }
+    }
+
+    // Deletes answer from database
+    pub async fn delete_answer(&self, question_id: i32) -> Result<bool, sqlx::Error> {
+        match sqlx::query("DELETE FROM answers WHERE corresponding_question = $1")
+            .bind(question_id)
+            .execute(&self.connection)
+            .await
+        {
+            Ok(_) => Ok(true),
+            Err(e) => Err(e),
         }
     }
 }

@@ -17,6 +17,7 @@ pub struct Store {
     pub connection: PgPool,
 }
 
+#[allow(dead_code)]
 // Connect PostgreSQL database to store class
 impl Store {
     pub async fn new() -> Self {
@@ -121,9 +122,6 @@ impl Store {
 
     // Adds a new question to the database
     pub async fn add_question(&self, new_question: NewQuestion) -> Result<Question, sqlx::Error> {
-        println!("New question: {:?}", new_question);
-        println!("New question: {:?}", new_question.title);
-        println!("New question: {:?}", new_question.content);
 
         match sqlx::query(
             "INSERT INTO questions (title, content, tags) VALUES ($1, $2, $3)
@@ -202,9 +200,23 @@ impl Store {
             .await
         {
             Ok(answer) => Ok(answer),
-            Err(e) => {
+            Err(_e) => {
                 Err(MyError::DatabaseQueryError)
             }
         }
     }
+
+    // Deletes answer from database
+    pub async fn delete_answer(&self, question_id: i32) -> Result<bool, sqlx::Error> {
+        match sqlx::query("DELETE FROM answers WHERE corresponding_question = $1")
+            .bind(question_id)
+            .execute(&self.connection)
+            .await
+        {
+            Ok(_) => Ok(true),
+            Err(e) => Err(e),
+        }
+    }
 }
+
+

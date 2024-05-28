@@ -321,6 +321,8 @@ impl IntoResponse for MyError {
     }
 }
 
+
+// Error displaying
 impl fmt::Display for MyError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -331,6 +333,8 @@ impl fmt::Display for MyError {
     }
 }
 
+
+// Basis REST CRUD implementation with 6 routes
 #[tokio::main]
 async fn main() {
     let store = Store::new();

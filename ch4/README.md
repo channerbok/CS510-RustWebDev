@@ -1,6 +1,6 @@
 # Rust Web Development - Chapter 4
 This is the complete implementation of the REST Crud API.
-It has 
+
 
 You can utilize the REST API via the URL
 All Questions 

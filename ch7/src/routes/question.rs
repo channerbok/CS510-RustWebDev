@@ -1,12 +1,7 @@
-use axum::body::Body;
-use axum::extract::Path;
-
-
 use crate::types::pagination::extract_pagination;
 use crate::types::pagination::Pagination;
-
-use crate::types::questions::NewQuestion;
-
+use axum::body::Body;
+use axum::extract::Path;
 use axum::Json;
 use axum::{
     extract::{Query, State},
@@ -17,14 +12,11 @@ use std::result::Result::Ok;
 use tracing::info;
 use tracing::{event, Level};
 extern crate serde_json;
-
 use std::collections::HashMap;
 
 use crate::store::Store;
 use crate::types::pagination::MyError;
 use crate::types::questions::Question;
-
-
 
 /// Handles when router find nothing
 pub async fn handler_fallback() -> Response {
@@ -38,29 +30,16 @@ pub async fn get_questions(
     Query(params): Query<HashMap<String, String>>,
     State(store): State<Store>,
 ) -> Result<impl IntoResponse, MyError> {
-    //println!("Params: {:?}", params);
-    
     log::info!("Start querying questions");
     event!(target: "practical_rust_book", Level::INFO, "querying questions");
-    
-    
+
     let mut pagination = Pagination::default();
-    
-    
-   log::info!("QQQStart querying questions");
-    event!(target: "QQQpractical_rust_book", Level::INFO, "QQQquerying questions");
-   
-   
-   
-   
+
     // Return a set amount of questions based upon query parameters in request
     if !params.is_empty() {
-        log::info!("yyyyy");
-        event!(target: "yyyy", Level::INFO, "yyyy");
         pagination = extract_pagination(params)?;
     }
 
-    
     info!(pagination = false);
     log::info!("No pagination used");
     event!(target: "practical_rust_book", Level::INFO, "PAGE2");
@@ -86,8 +65,6 @@ pub async fn add_question(
     State(store): State<Store>,
     Json(new_question): Json<Question>,
 ) -> Result<Response, MyError> {
-
-    log::info!("ADD");
     event!(target: "practical_rust_book", Level::INFO, "ADD");
     if let Err(_e) = store.add_question(new_question).await {
         return Err(MyError::QuestionNotFound);
@@ -128,9 +105,13 @@ pub async fn delete_question(
         return Err(MyError::DatabaseQueryError);
     }
 
+    if let Err(_e) = store.delete_answer(id).await {
+        return Err(MyError::DatabaseQueryError);
+    }
+
     let response = Response::builder()
         .status(StatusCode::OK)
-        .body(Body::from(format!("Question {} Added", id)))
+        .body(Body::from(format!("Question {} deleted", id)))
         .unwrap();
 
     Ok(response)

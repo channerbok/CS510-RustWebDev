@@ -1,13 +1,4 @@
-/*
-Credit to Axum Documentation
- https://docs.rs/axum/latest/axum/
- https://docs.rs/axum/latest/axum/extract/struct.State.html
- https://docs.rs/tower-http/0.5.2/tower_http/cors/index.html
 
- Credit to Tokio Documentation
- https://github.com/tokio-rs/axum
-
-*/
 
 use axum::http::{header, Method};
 use std::net::SocketAddr;
@@ -129,6 +120,8 @@ impl IntoResponse for MyError {
     }
 }
 
+
+// Error displaying
 impl fmt::Display for MyError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -138,6 +131,8 @@ impl fmt::Display for MyError {
     }
 }
 
+
+// Creates one route for the questions to be displayed.
 #[tokio::main]
 async fn main() {
     let store = Store::new();

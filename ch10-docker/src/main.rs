@@ -11,7 +11,7 @@ use crate::routes::question::handler_fallback;
 use crate::routes::question::update_question;
 
 use crate::store::Store;
-
+use sqlx::Executor;
 use axum::http::{header, Method};
 use axum::routing::{delete, post, put};
 use axum::{routing::get, Router};
@@ -38,6 +38,17 @@ async fn main() {
         .run(&store.clone().connection)
         .await
         .expect("Cannot run migration");
+    
+    // Set the sequence to start at a value higher than the maximum ID in the table
+    // Prevents duplicate IDs from being used
+    if let Err(err) = store
+        .connection
+        .execute("SELECT setval('answers_id_seq', (SELECT COALESCE(MAX(id), 0) FROM answers) + 1)")
+        .await
+    {
+        eprintln!("Failed to set sequence value: {}", err);
+        return;
+    }
 
     let cors = CorsLayer::new()
         .allow_origin(Any)

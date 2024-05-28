@@ -11,7 +11,6 @@ use crate::types::pagination::MyError;
 
 use crate::types::answer::NewAnswer;
 
-
 // Adds answer to the database
 // _e was still flagging clippy so I added allow clause
 #[allow(unused_variables)]

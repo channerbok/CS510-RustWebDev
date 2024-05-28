@@ -9,12 +9,12 @@ use crate::routes::question::get_questions;
 use crate::routes::question::handler_fallback;
 use crate::routes::question::update_question;
 
-use tracing_subscriber::fmt::format::FmtSpan;
 use axum::http::{header, Method};
 use axum::routing::{delete, post, put};
 use axum::{routing::get, Router};
 use std::net::SocketAddr;
 use tower_http::cors::{Any, CorsLayer};
+use tracing_subscriber::fmt::format::FmtSpan;
 
 #[tokio::main]
 async fn main() {
