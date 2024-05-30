@@ -122,7 +122,7 @@ pub async fn get_questions(
 
             Ok(Html(html_string))
         }
-        _ => Err(MyError::DatabaseQueryError),
+        _ => Err(MyError::MissingParameters),
     }
 }
 
@@ -168,11 +168,10 @@ pub async fn delete_question(
     Path(id): Path<i32>,
     State(store): State<Store>,
 ) -> Result<Response, MyError> {
-    
     if let Err(_e) = store.delete_answer(id).await {
         return Err(MyError::DatabaseQueryError);
     }
-    
+
     if let Err(_e) = store.delete_question(id).await {
         return Err(MyError::DatabaseQueryError);
     }
