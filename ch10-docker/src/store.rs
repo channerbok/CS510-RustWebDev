@@ -75,6 +75,7 @@ impl Store {
         limit: Option<i32>,
         offset: i32,
     ) -> Result<Vec<Question>, MyError> {
+        
         // Check if questions table is empty
         let count_query = sqlx::query("SELECT COUNT(*) as count FROM questions")
             .fetch_one(&self.connection)
@@ -233,6 +234,8 @@ impl Store {
 
     // Adds answer to the data base by matching the answer id to the question id
     pub async fn add_answer(&self, new_answer: NewAnswer) -> Result<Answer, MyError> {
+        
+
         match sqlx::query("INSERT INTO answers (content, corresponding_question) VALUES ($1, $2) RETURNING id, content, corresponding_question")
             .bind(new_answer.content)
             .bind(new_answer.question_id.0)
