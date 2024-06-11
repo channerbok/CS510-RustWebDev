@@ -1,27 +1,37 @@
-use std::io::{Error, ErrorKind};
+use std::collections::HashSet;
 use std::str::FromStr;
 
-// Question struct that serves as the quetion and its contents
-#[allow(dead_code)]
+// Question struct that serves as the question and its contents
 #[derive(Debug)]
-struct Question {
-    id: QuestionId,
-    title: String,
-    content: String,
-    tags: Option<Vec<String>>,
+pub struct QuestionStruct {
+    pub id: QuestionId,
+    pub title: String,
+    pub content: String,
+    pub answer: String,
+    pub tags: Option<HashSet<String>>,
+    pub source: Option<String>,
 }
 
 // Question ID that is used to uniquely identify the questions from each other
-#[allow(dead_code)]
 #[derive(Debug)]
-struct QuestionId(String);
-impl Question {
-    fn new(id: QuestionId, title: String, content: String, tags: Option<Vec<String>>) -> Self {
-        Question {
-            id,
+pub struct QuestionId(i32);
+
+impl QuestionStruct {
+    pub fn new(
+        id: i32,
+        title: String,
+        content: String,
+        answer: String,
+        tags: Option<HashSet<String>>,
+        source: Option<String>,
+    ) -> Self {
+        QuestionStruct {
+            id: QuestionId(id),
             title,
             content,
+            answer,
             tags,
+            source,
         }
     }
 }
@@ -31,20 +41,25 @@ impl Question {
 impl FromStr for QuestionId {
     type Err = std::io::Error;
     fn from_str(id: &str) -> Result<Self, Self::Err> {
-        match id.is_empty() {
-            false => Ok(QuestionId(id.to_string())),
-            true => Err(Error::new(ErrorKind::InvalidInput, "No id provided")),
+        match id.parse::<i32>() {
+            Ok(parsed_id) => Ok(QuestionId(parsed_id)),
+            Err(_) => Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidInput,
+                "Invalid ID",
+            )),
         }
     }
 }
 
 // Created new question and prints it
 fn main() {
-    let question = Question::new(
-        QuestionId::from_str("1").expect("No id provided"),
+    let question = QuestionStruct::new(
+        1,
         "First Question".to_string(),
         "Content of question".to_string(),
-        Some(vec!["faq".to_string()]),
+        "Content of question".to_string(),
+        Some(vec!["faq".to_string()].into_iter().collect()),
+        Some("Some source".to_string()),
     );
     println!("{:?}", question);
 }

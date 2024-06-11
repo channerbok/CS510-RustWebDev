@@ -13,7 +13,7 @@ services:
       context: .
       target: final
     ports:
-      - 3000:3000
+      - 8000:8000
     environment:
       - PG_DBNAME=questions
       - PG_HOST=db

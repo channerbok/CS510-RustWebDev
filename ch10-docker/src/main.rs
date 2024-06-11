@@ -6,6 +6,7 @@ use crate::routes::answer::add_answer;
 use crate::routes::question::add_question;
 use crate::routes::question::delete_question;
 use crate::routes::question::get_questions;
+use crate::routes::question::get_questions_frontend;
 
 use crate::routes::question::handler_fallback;
 use crate::routes::question::update_question;
@@ -52,11 +53,12 @@ async fn main() {
     }
     */
     let cors = CorsLayer::new()
-        .allow_origin(Any)
-        .allow_headers([header::CONTENT_TYPE])
-        .allow_methods([Method::GET, Method::POST, Method::PUT, Method::DELETE]);
+        .allow_origin(vec!["http://127.0.0.1:3000".parse().unwrap()])
+        .allow_headers(Any)
+        .allow_methods(Any);
 
     let app = Router::new()
+        .route("/api/v1/question", get(get_questions_frontend))
         .route("/questions", get(get_questions))
         .route("/questions", post(add_question))
         .route("/questions/:id", put(update_question))
@@ -66,7 +68,7 @@ async fn main() {
         .with_state(store)
         .fallback(handler_fallback);
 
-    let ip = SocketAddr::new([0, 0, 0, 0].into(), 3000);
+    let ip = SocketAddr::new([0, 0, 0, 0].into(), 8000);
     let listener = match tokio::net::TcpListener::bind(ip).await {
         Ok(listener) => listener,
         Err(err) => {

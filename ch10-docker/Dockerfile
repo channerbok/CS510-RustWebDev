@@ -67,7 +67,7 @@ COPY --chown=appuser:appuser ./migrations ./migrations
 COPY --chown=appuser:appuser ./questions.json ./
 
 # Expose the port that the application listens on.
-EXPOSE 3000
+EXPOSE 8000
 
 # What the container should run when it is started.
 CMD ["/bin/server"]

@@ -28,6 +28,29 @@ pub async fn handler_fallback() -> Response {
     (StatusCode::NOT_FOUND, "404 Not Found").into_response()
 }
 
+
+pub async fn get_questions_frontend(
+    State(store): State<Store>,
+) -> Result<Response<Body>, MyError> {
+    let question_result = store.get_questions_frontend().await?;
+    
+    let response_body = match serde_json::to_string_pretty(&question_result) {
+        Ok(body) => body,
+        Err(err) => return Err(MyError::DatabaseQueryError),
+    };
+
+    let response = Response::builder()
+        .status(StatusCode::OK)
+        .header("Content-Type", "application/json")
+        .body(Body::from(response_body))
+        .map_err(|_| MyError::DatabaseQueryError)?;
+
+    Ok(response)
+}
+
+
+
+
 // Handler to get questions
 // Also handles the base line request and returns entire question json i.e. (http://localhost:3000/questions)
 pub async fn get_questions(

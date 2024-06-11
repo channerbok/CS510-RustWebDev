@@ -4,13 +4,15 @@ use crate::types::questions::NewQuestion;
 use crate::types::{
     account::Account,
     answer::{Answer, AnswerId, NewAnswer},
-    questions::{Question, QuestionId},
+    questions::{Question, QuestionId, QuestionResponse},
 };
 use sqlx::postgres::{PgPool, PgPoolOptions, PgRow};
 use sqlx::Row;
 use std::collections::HashMap;
 use std::result::Result::Ok;
-
+use axum::http::{Response, StatusCode};
+use axum::body::Body;
+use std::collections::HashSet;
 
 #[derive(Clone)]
 pub struct Store {
@@ -68,6 +70,35 @@ impl Store {
             }
         }
     }
+
+    
+    
+
+
+    pub async fn get_questions_frontend(&self) -> Result<QuestionResponse, MyError> {
+    // Fetch a random question from the database
+    let random_question = sqlx::query("SELECT * FROM questions ORDER BY RANDOM() LIMIT 1")
+        .map(|row: sqlx::postgres::PgRow| QuestionResponse {
+            id: row.get("id"),
+            title: row.get("title"),
+            content: row.get("content"),
+            answer: "".to_string(),
+            source: "".to_string(), // Set answer to empty string
+            tags: row.try_get::<Option<Vec<String>>, _>("tags")
+                .ok()
+                .map(|tags| tags.into_iter().flatten().collect::<HashSet<String>>()),
+        })
+        .fetch_one(&self.connection)
+        .await
+        .map_err(|_| MyError::QuestionNotFound)?;
+
+    Ok(random_question)
+}
+
+
+
+
+
 
     // Returns all questions from the database
     pub async fn get_questions(
