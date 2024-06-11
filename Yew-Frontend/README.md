@@ -16,5 +16,11 @@ Steps to Execute:
 6. A browser window should open automatically, if not open brower and go to this URL: http://localhost:3000
 
 
+References:
+https://github.com/pdx-cs-rust-web/knock-knock-yew/tree/main
+https://yew.rs/docs/tutorial
+https://pudding-entertainment.medium.com/rust-building-web-frontend-with-yew-ca7421fe01d4
+https://dev.to/davidedelpapa/series/5838
+
 
 
