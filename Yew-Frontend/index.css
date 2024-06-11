@@ -1,0 +1,56 @@
+.teller {
+    font-weight: bold;
+}
+
+.tellee {
+    font-style: italic;
+}
+
+.annotation {
+    font-size: 80%;
+    color:gray;
+}
+
+h1 {
+    font-weight: bold;
+    font-size: 150%;
+}
+
+.joke {
+    border: 1px solid black;
+}
+
+.error {
+    color: #881111;
+}
+
+.margin-bottom-10 {
+    font-size: 100%;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color:black;
+}
+
+.button{
+    color:black
+}
+
+.box{
+    color:black;
+}
+.answer{
+    color:black;
+    font-weight: bold;
+}
+
+.align-middle {
+    vertical-align: middle;
+}
+
+.category{
+    color:#118811
+}
+
+.header{
+    color:black
+}
