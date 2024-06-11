@@ -1,20 +1,16 @@
-mod cookie;
 mod question;
 
-use cookie::*;
 use question::*;
 use std::collections::HashSet;
 
 use gloo_net::http;
 
-use wasm_cookies as cookies;
 use web_sys::HtmlTextAreaElement;
 use yew::prelude::*;
 
 pub type QuestionResult = Result<QuestionStruct, gloo_net::Error>;
 
 struct App {
-    cookie: String,
     question: QuestionResult,
     answer_input: String,
 }
@@ -41,16 +37,14 @@ impl Component for App {
 
     // Function to create the initial state of the component
     fn create(ctx: &Context<Self>) -> Self {
-        let cookie = acquire_cookie();
         App::refresh_question(ctx, None);
         let question = Err(gloo_net::Error::GlooError("Loading Question…".to_string()));
         Self {
-            cookie,
             question,
             answer_input: String::new(),
         }
     }
-    
+
     // Function to update the component state based on received messages
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
@@ -74,7 +68,7 @@ impl Component for App {
             }
         }
     }
-    
+
     // Function to define the component's view
     fn view(&self, ctx: &Context<Self>) -> Html {
         let oninput_answer = ctx.link().callback(|e: InputEvent| {
@@ -82,16 +76,13 @@ impl Component for App {
             Msg::UpdateAnswer(input.value())
         });
 
-        let cookie = &self.cookie;
         let question = &self.question;
-        
+
         // Display Formatting
         html! {
             <>
                 <h1 class="header">{ "Questions and Answers!" }</h1>
-                if false {
-                {render_cookie(cookie)}
-                }
+
                 <div class="margin-bottom-10">
                     {match &self.question {
                         Ok(question) => html!{ <Question question={question.clone()} /> },

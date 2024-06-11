@@ -1,7 +1,6 @@
 use crate::*;
 use wasm_bindgen::prelude::*;
 
-
 // Data type
 #[derive(Debug, Properties, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
 pub struct QuestionStruct {
@@ -40,10 +39,8 @@ impl QuestionStruct {
             Ok(data) => {
                 let json_data = data.json().await;
                 match &json_data {
-                    Ok(_json) => {
-                    }
-                    Err(_e) => {
-                    }
+                    Ok(_json) => {}
+                    Err(_e) => {}
                 }
                 Msg::GotQuestion(json_data)
             }
